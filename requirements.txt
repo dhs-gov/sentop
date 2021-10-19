@@ -1,9 +1,3 @@
-# DO NOT include azure-functions-worker in this file
-# The Python Worker is managed by Azure Functions platform
-# Manually managing azure-functions-worker may cause unexpected issues
-# python -m pip install -r requirements.txt
-azure-functions==1.7.2
-azure-functions-durable>=1.0.0b12
 -f https://download.pytorch.org/whl/torch_stable.html
 torch==1.6.0+cpu
 torchvision==0.7.0+cpu
