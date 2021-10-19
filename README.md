@@ -1,6 +1,6 @@
 # SenTop
 
-[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.8](https://img.shields.io/github/v/release/dhs-gov/sentopic-azure)](https://img.shields.io/github/v/release/dhs-gov/sentopic-azure/)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.8](https://img.shields.io/github/v/release/dhs-gov/sentop)](https://img.shields.io/github/v/release/dhs-gov/sentop/)
 
 SenTop combines sentiment analysis and topic modeling into a single capability allowing for sentiments to be derived per derived topic and for topics to be derived per generated sentiment. 
 
