@@ -6,7 +6,10 @@ SenTop combines sentiment analysis and topic modeling into a single capability a
 
 
 ## Installation
-
+To install with pypi, use:
+```
+pip install sentop
+```
 
 ## Quick Start
 
