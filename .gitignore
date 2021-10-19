@@ -1,12 +1,9 @@
 # Misc
 *notes.txt
-deploy-as-zip-to-azure.txt
 sentop_config.py
-hugginface_models_dont_work.txt
 tokenizers/
 tokenizers/punkt/
 *.pickle
-settings.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -131,10 +128,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Azure Functions artifacts
-bin
-obj
-appsettings.json
-local.settings.json
-.python_packages
