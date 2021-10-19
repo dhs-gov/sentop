@@ -10,6 +10,8 @@ setuptools.setup(
      scripts=['sentop'] ,
      author="Stephen Quirolgico",
      author_email="stephen.quirolgico@gmail.com",
+     license="Public Domain",
+     platform="Operating System :: OS Independent",
      description="A sentiment analysis and topic modeling package",
      long_description=long_description,
    long_description_content_type="text/markdown",
