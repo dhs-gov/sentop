@@ -19,5 +19,8 @@ setuptools.setup(
          "Programming Language :: Python :: 3",
          "License :: Public Domain",
          "Operating System :: OS Independent",
+         "Intended Audience :: Science/Research",
+         "Intended Audience :: Developers",
+         "Topic :: Scientific/Engineering :: Artificial Intelligence",
      ],
  )
