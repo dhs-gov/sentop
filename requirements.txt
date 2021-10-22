@@ -1,10 +1,15 @@
+pyyaml
 -f https://download.pytorch.org/whl/torch_stable.html
-torch==1.6.0+cpu
-torchvision==0.7.0+cpu
+#torch==1.6.0+cpu
+torch
+#torchvision==0.7.0+cpu
+torchvision
 jsonpickle==2.0.0
-adaptnlp==0.2.2
+#adaptnlp==0.2.2
+adaptnlp
 flair==0.7
-nltk==3.6.2
+#nltk==3.6.2
+nltk
 numpy==1.20.3
 openpyxl==3.0.7
 #bertopic==0.8.1
@@ -15,4 +20,5 @@ tomotopy==0.12.1
 #spacy # Read how to do for Azure at https://williamandrewgriffin.com/best-way-to-deploy-spacy-to-azure-functions/
 psycopg2==2.8.6
 urllib3==1.26.5
-transformers==3.5.1
+#transformers==3.5.1
+transformers

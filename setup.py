@@ -6,12 +6,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
      name='sentop',  
-     version='0.2b',
-     scripts=['sentop'] ,
+     version='0.1',
+     scripts=['sentop_pip'] ,
      author="Stephen Quirolgico",
      author_email="stephen.quirolgico@gmail.com",
-     license="Public Domain",
-     platform="Operating System :: OS Independent",
      description="A sentiment analysis and topic modeling package",
      long_description=long_description,
    long_description_content_type="text/markdown",
