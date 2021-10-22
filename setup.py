@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
      name='sentop',  
-     version='0.2.1',
+     version='0.2.2',
      scripts=['sentop_pip'] ,
      author="Stephen Quirolgico",
      author_email="stephen.quirolgico@gmail.com",
