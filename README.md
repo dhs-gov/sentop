@@ -22,53 +22,11 @@ st.run_analysis(docs, annotation="My dataset")
 
 Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adaptnlp) with state-of-the-art (SOTA) [Hugging Face Transformers](https://github.com/huggingface/transformers).  SenTop provides multiple sentiment analyses (confidence scores also available):
 
-1. [RoBERTa Base Sentiment](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment) for 3-class sentiment -- based on Facebook AI's [RoBERTa](https://ai.facebook.com/blog/roberta-an-optimized-method-for-pretraining-self-supervised-nlp-systems/):
-    - negative  
-    - neutral
-    - positive
+1. [RoBERTa Base Sentiment](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment) for 3-class sentiment -- based on Facebook AI's [RoBERTa](https://ai.facebook.com/blog/roberta-an-optimized-method-for-pretraining-self-supervised-nlp-systems/)
 2. [BERT Base Multilingual Uncased Sentiment](https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment) for 5-class sentiment -- based on Google's [Bidirectional Encoder Representations from Transformers (BERT)](https://en.wikipedia.org/wiki/BERT_(language_model))
-    - 1 star
-    - 2 stars
-    - 3 stars
-    - 4 stars
-    - 5 stars
-3. [Twitter roBERTa-base for Emotion Recognition](https://huggingface.co/cardiffnlp/twitter-roberta-base-emotion) for 4-class emotion recognition:
-    - joy
-    - optimism
-    - anger
-    - sadness
-4. [BERT-base-cased Geomotions (Original)](https://huggingface.co/monologg/bert-base-cased-goemotions-original) for 28-class emotion recognition:
-    - admiration
-    - amusement 
-    - anger
-    - annoyance 
-    - approval 
-    - caring
-    - confusion 
-    - curiosity 
-    - desire
-    - disappointment
-    - disapproval
-    - disgust
-    - embarrassment   
-    - excitement
-    - fear
-    - gratitude 
-    - grief
-    - joy
-    - love
-    - nervousness
-    - neutral     
-    - optimism  
-    - pride
-    - realization
-    - relief
-    - remorse
-    - sadness
-    - surprise 
-5. [Twitter roBERTa-base for Offensive Language Identification](https://huggingface.co/cardiffnlp/twitter-roberta-base-offensive) for 2-class offensive language detection:
-    - offensive
-    - not-offensive
+3. [Twitter roBERTa-base for Emotion Recognition](https://huggingface.co/cardiffnlp/twitter-roberta-base-emotion) for 4-class emotion recognition
+4. [BERT-base-cased Geomotions (Original)](https://huggingface.co/monologg/bert-base-cased-goemotions-original) for 28-class emotion recognition
+5. [Twitter roBERTa-base for Offensive Language Identification](https://huggingface.co/cardiffnlp/twitter-roberta-base-offensive) for 2-class offensive language detection
 
 ## Topic Modeling
 
@@ -86,5 +44,5 @@ SenTop combines sentiment analysis and topic modeling by copmuting both at the d
 | Document | BERT Topic | LDA Topic | 3-Class Sentiment | 5-Class Sentiment |
 | :--- | :----: | :----: | :----: | :----: |
 | "Having to report to work without being provided PPE." | 3 | 0 | negative | 1_star |
-| "Teleworking at home." | 3 | 2 | neutral | 3_stars |
-| "Things are good. Im ready to do the mission." | 3 | 1 | positive | 4_stars |  
+| "Teleworking at home." | 1 | 2 | neutral | 3_stars |
+| "Things are good. Im ready to do the mission." | 2 | 1 | positive | 4_stars |  
