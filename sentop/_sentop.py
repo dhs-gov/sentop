@@ -175,7 +175,8 @@ class SenTop:
 
         row_id_list = []
         RESULTS_DIR = self.config['RESULTS']['OUTPUT_DIR']
-        RESULTS_FORMAT = self.config['RESULTS']['RESULTS_FORMAT']
+        #RESULTS_FORMAT = self.config['RESULTS']['RESULTS_FORMAT']
+        RESULTS_FORMAT = 'XLSX'  # Set for now.
         if RESULTS_FORMAT == 'XLSX':
             xlsx_util.generate_excel(sentop_id, self.annotation, row_id_list, self.docs, sentiments, lda_results, bertopic_results, RESULTS_DIR)
             logger.info(f"Wrote Excel XLSX file|Completed")
