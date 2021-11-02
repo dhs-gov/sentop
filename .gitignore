@@ -6,7 +6,6 @@ sentop_config.py
 tokenizers/
 tokenizers/punkt/
 *.pickle
-sentop.ini
 config.ini
 
 # Byte-compiled / optimized / DLL files
