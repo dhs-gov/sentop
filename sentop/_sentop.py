@@ -33,7 +33,7 @@ class SenTop:
     def __init__(self):
         # Read user configuration
         self.config = configparser.ConfigParser()
-        self.config.read("sentop.ini")
+        self.config.read("config.ini")
 
         # Initialize logger
         log_util.set_logging(self.config)
