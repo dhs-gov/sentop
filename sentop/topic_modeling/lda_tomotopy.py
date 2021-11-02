@@ -161,9 +161,10 @@ def assess(config, docs, all_stop_words):
             NUM_WORDS_TOPIC = 10
         logger.info(f"NUM_WORDS_TOPIC: {NUM_WORDS_TOPIC}")
 
-        WORD_FORM_REDUCTION = config['LDA']['WORD_FORM_REDUCTION']
-        if WORD_FORM_REDUCTION != 'STEMMER' and WORD_FORM_REDUCTION != 'LEMMATIZER' and WORD_FORM_REDUCTION != 'NONE':
-            WORD_FORM_REDUCTION = 'NONE'
+        #WORD_FORM_REDUCTION = config['LDA']['WORD_FORM_REDUCTION']
+        #if WORD_FORM_REDUCTION != 'STEMMER' and WORD_FORM_REDUCTION != 'LEMMATIZER' and WORD_FORM_REDUCTION != 'NONE':
+        #    WORD_FORM_REDUCTION = 'NONE'
+        WORD_FORM_REDUCTION = 'NONE'   
         logger.info(f"WORD_FORM_REDUCTION: {WORD_FORM_REDUCTION}")
 
         # ---------------------------- LDA PREPROCESSING -----------------------------
