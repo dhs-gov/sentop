@@ -3,9 +3,10 @@ from os import devnull
 import sys
 from contextlib import contextmanager,redirect_stderr,redirect_stdout
 import logging
+import traceback
 
 # Logging utils
-def set_logging(config):
+def set_config(config):
 
     ENABLE_LOG_FILE = config['LOGGING']['ENABLE_LOG_FILE']
     print(f"ENABLE_LOG_FILE: {ENABLE_LOG_FILE}")
@@ -19,9 +20,12 @@ def set_logging(config):
     LOG_OVERWRITE = config['LOGGING']['LOG_OVERWRITE']
     print(f"LOG_OVERWRITE: {LOG_OVERWRITE}") 
 
-    # This sets the root logger to write to stdout (your console).
+    # This sets the root logger to write to stdout (console).
     # Your script/app needs to call this somewhere at least once.
-    logging.basicConfig(handlers=[logging.FileHandler(LOG_FILE_PATH), logging.StreamHandler()], format='%(asctime)s [%(levelname)s] %(name)s: %(message)s', level=LOGGING_LEVEL)
+    # Configure logging
+
+
+    logging.basicConfig(handlers=[logging.FileHandler(LOG_FILE_PATH), logging.StreamHandler()], format='%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d %(message)s', level=LOGGING_LEVEL)
 
     # By default the root logger is set to WARNING and all loggers you define
     # inherit that value. Here we set the root logger to NOTSET. This logging
@@ -55,9 +59,4 @@ def enable_logging():
         'disable_existing_loggers': False,
     })
 
-
-def show_stack_trace(error_msg):
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    logging.getLogger('log_util').error(f"{exc_type, fname, exc_tb.tb_lineno, error_msg}")
 

@@ -1,28 +1,17 @@
 import nltk
 from nltk.tokenize import word_tokenize
-from nltk.tokenize.treebank import TreebankWordDetokenizer
 import logging
+from . import stopwords
+
+def get_all_stopwords(user_stop_words):
+    lowercase_sentop_stopwords = [str(x).lower() for x in stopwords.stopwords_list]
+    lowercase_user_stopwords = [str(y).lower() for y in user_stop_words]
+    if user_stop_words:
+        lowercase_sentop_stopwords.extend(lowercase_user_stopwords)
+    return lowercase_sentop_stopwords
     
 
-def remove_quotes(text):
-    return text.replace('"', '').replace("'", '')
-
-
-def remove_escape_chars(text):
-    return text.replace('\r',' ').replace('\n',' ').replace('\t',' ')
-    
-
-def remove_line_feeds(text):
-    # Excel line feeds
-    return text.strip().replace('_x000d_',' ').replace('_x000D_', '').replace('_X000D_',' ') # Excel line feed
-
-
-def initial_clean(text):
-    # Initial cleaning of input text.
-    t1 = remove_escape_chars(text)
-    return remove_line_feeds(t1)
-
-def transformer_truncate(i, text):
+def truncate(text, MAX_NLTK_TOKENS):
     """ Text should be less than 512 tokens for BERT/RoBERTa/etc transformers. However, using the following
         is not able to find all models on HuggingFace (e.g., for class3) (giving HTTP 404 errors):
 
@@ -36,23 +25,87 @@ def transformer_truncate(i, text):
                 new_text = tokenizer.decode(new_tokens)
                 #print(f"New tokenized text: {new_text}")
                 text = new_text
-
-        So, we simply check for MAX_NLTK_TOKENS and then slice the *last* MAX_NLT_TOKENS from the text. The
-        rationale here is that most of the important info in the text will be at the end. This may remove more
-        tokens than needed.
     """
-
-    #MAX_BERT_TOKENS = 512 Not used due to issue above.
-    MAX_NLTK_TOKENS = 250 # Note this is a heuristic and is likely much less than number of BERT, RoBERTa, etc. (which may double number of) tokens! We can't
-                          # easily check for BERT tokens because of issue described above with Hugging Face 404 errors.
     nltk_tokens = word_tokenize(text)
     if len(nltk_tokens) > MAX_NLTK_TOKENS:
-        # Truncate end
-        truncated_tokens = nltk_tokens[0:MAX_NLTK_TOKENS]
-        text = TreebankWordDetokenizer().detokenize(truncated_tokens)
-        #print(f"Detokenized text: {text}")
+        #print(f"Found num tokens > MAX_NLTK_TOKENS")
+        new_text = ''
+        sentences = nltk.sent_tokenize(text)
+        for sentence in sentences:
+            if (len(sentence) + len(new_text)) > MAX_NLTK_TOKENS:
+                #print(f"TRUNCATED: {new_text}")
+                return new_text, True
+            else:
+                new_text = new_text + ' ' + sentence
+        return new_text, False
+    else:
+        return text, False
 
+
+# Counts valid number of words (i.e., words that contain at least one alpha char)
+def check_num_words(text):
+    words = text.split()
+    num_good_words = 0
+    for word in words:
+        found_letter = any(c.isalpha() for c in word)
+        if found_letter:
+            num_good_words = num_good_words + 1
+    return num_good_words
+
+
+# Clean non-JSON text. 
+def clean(text):
+    if not text:
+        return text
+    # Remove quotes
+    text = text.replace('"', '')
+    text = text.replace("'", '')
+    # Remove line feeds
+    text = text.replace('\r',' ')
+    text = text.replace('\n',' ')
+    text = text.replace('\t',' ')
+    # Remove Excel line feeds
+    text = text.replace('_x000d_',' ') # Excel line feed
+    text = text.replace('_x000D_', '') # Excel line feed
+    text = text.replace('_X000D_',' ') # Excel line feed
+    # Strip leading/trailing whitespace
+    text = text.strip()
     return text
+
+
+def analyze(docs_in, conf):
+    logger = logging.getLogger()
+    logger.info('Preprocessing docs')
+
+    # Get preprocessor configurations        
+    MIN_DOC_WORDS = conf['PREPROCESSING']['MIN_DOC_WORDS']
+    MAX_NLTK_TOKENS = conf['PREPROCESSING']['MAX_NLTK_TOKENS']
+
+    cleaned_docs = []
+    preprocess_statuses = []  # The preprocessing statuses for each document
+    for i, doc in enumerate(docs_in):
+        print(f"Document {i} of {len(docs_in)}", end = "\r")
+
+        # Clean doc
+        truncated_doc, truncated = truncate(doc, int(MAX_NLTK_TOKENS))
+        clean_doc = clean(truncated_doc)
+        cleaned_docs.append(clean_doc)
+
+        # Check for blank or NA value. NOTE: Python can't detect the string
+        # literal 'none' (it's a reserved literal), so we cannot check for it here.
+        if not clean_doc or clean_doc == 'na' or clean_doc == 'n/a' or clean_doc == 'not applicable':
+            preprocess_statuses.append("ERROR: Doc is None, 'NA', 'N/A', or 'Not Applicable' found.")
+        elif not any(c.isalpha() for c in clean_doc):
+            preprocess_statuses.append("ERROR: No alphabetic characters found.")
+        elif check_num_words(clean_doc) < int(MIN_DOC_WORDS):
+            preprocess_statuses.append(f"ERROR: Number of valid words is less than minimum allowed ({MIN_DOC_WORDS}).")
+        elif truncated == True:
+            preprocess_statuses.append(f"WARNING: Text too long. Truncated to < 512 tokens for transformers.")
+        else:
+            preprocess_statuses.append('OK')
+
+
+    return cleaned_docs, preprocess_statuses
 
 
 

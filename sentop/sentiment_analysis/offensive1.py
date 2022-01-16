@@ -65,5 +65,5 @@ def assess(classifier, docs):
         logger.info(f"End Offensive-1 (elapsed: {elapsed_str})")
         return sentiments, None
     except Exception as e:
-        log_util.show_stack_trace(e)
+        print(traceback.format_exc())
         return None, str(e)

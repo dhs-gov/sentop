@@ -2,7 +2,6 @@
 *notes.txt
 sentop_pip
 test.py
-sentop_config.py
 tokenizers/
 tokenizers/punkt/
 *.pickle

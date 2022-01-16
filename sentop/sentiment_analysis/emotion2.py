@@ -44,7 +44,7 @@ def assess(classifier, docs):
     try:
         sentiments = []
         for i, doc in enumerate(docs):
-            #print(f"Document {i} of {len(docs)}", end = "\r")
+            print(f"Document {i} of {len(docs)}", end = "\r")
             sentiment = get_sentiment(classifier, doc)
             if sentiment:
                 sentiments.append(sentiment)
@@ -59,5 +59,5 @@ def assess(classifier, docs):
         logger.info(f"End Emotion-2 (elapsed: {elapsed_str})")
         return sentiments, None
     except Exception as e:
-        log_util.show_stack_trace(e)
+        print(traceback.format_exc())
         return None, str(e)

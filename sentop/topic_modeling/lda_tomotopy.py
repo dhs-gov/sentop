@@ -6,7 +6,7 @@ import logging
 import nltk
 import time
 from sentop.util import log_util
-
+import traceback
 
 def get_coherence(preprocessed_docs, num_topics):
     logger = logging.getLogger('lda_tomotopy')
@@ -21,7 +21,9 @@ def get_coherence(preprocessed_docs, num_topics):
         try:
             mdl.add_doc(row.strip().split())
         except Exception as e:
-            log_util.show_stack_trace(str(e))
+            print(traceback.format_exc())
+
+
 
     mdl.burn_in = 100
     mdl.train(0)
@@ -214,7 +216,7 @@ def assess(config, docs, all_stop_words):
         return topic_model_results, error
 
     except Exception as e:
-        log_util.show_stack_trace(e)
+        print(traceback.format_exc())
         return None, str(e)
 
 

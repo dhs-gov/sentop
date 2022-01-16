@@ -3,10 +3,278 @@ from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font
 import logging
 from . import log_util
+import string
 
 
-def generate_excel(id, annotation, row_id_list, docs, sentiments, lda_results, bertopic_results, RESULTS_DIR):
-    logger = logging.getLogger('xlsx_util')
+from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
+import logging
+import traceback
+from datetime import datetime
+
+
+class XlsxDataIn ():
+
+    def __init__(self, job_id, table_data, headers_row_index, headers, id_column_letter, id_column_index, narrative_column_letter, narrative_column_index, annotation, user_stopwords):
+
+        self.job_id = job_id
+        self.table_data = table_data
+        self.headers_row_index = headers_row_index
+        self.headers = headers
+        self.id_column_letter = id_column_letter
+        self.id_column_index = id_column_index
+        self.narrative_column_letter = narrative_column_letter
+        self.narrative_column_index = narrative_column_index
+        self.annotation = annotation
+        self.user_stopwords = user_stopwords
+
+
+    def show_info(self):
+        logger = logging.getLogger()
+        if self.job_id:
+            logger.debug(f"JOB ID: {self.job_id}")
+        else:
+            logger.error("No JOB ID for this data.")
+
+        if self.table_data:
+            logger.debug(f"Table data rows: {len(self.table_data)}, cols: {len(self.headers)}")
+        else:
+            logger.error("No table data for this object.")
+
+        if self.annotation:
+            logger.debug(f"Annotation: {self.annotation}")
+        else:
+            logger.error("No annotation for this data.")
+
+        if self.user_stopwords:
+            logger.debug(f"User stop words: {len(self.user_stopwords)}")
+        else:
+            logger.error("No user stop words for this data.")
+
+
+def get_user_stopwords(config_ws, row, column):
+    logger = logging.getLogger()
+    user_stop_words = []
+    try:
+        done = False
+        while not done:
+            stop_word = config_ws.cell(row, column).value
+            if stop_word:
+                logger.debug(f"Found stop word: {stop_word}")
+                user_stop_words.append(stop_word)
+                row += 1 
+            else:
+                done = True
+
+        return user_stop_words
+
+    except Exception as e:
+        print(traceback.format_exc())
+        logger.error("Error getting user user stop words.")
+        return None
+
+
+def column_letter_to_number(c):
+    """Return number corresponding to excel-style column."""
+    number=-25
+    for l in c:
+        if not l in string.ascii_letters:
+            return False
+        number+=ord(l.upper())-64+25
+    return number
+
+"""
+def get_xlsx_file(file_path):
+    import openpyxl
+
+    try:
+        if not exists(file_path):
+            return None, f"Can't find file at: {file_path}."
+        wb = openpyxl.load_workbook(filename=file_path, data_only=True)
+        print(wb.sheetnames)
+        #ws = wb.get_sheet_by_name('Sheet1')
+        ws = wb.worksheets[0]    
+        # data list of [id-col,val]            
+        docs = [] 
+        for row in ws.iter_rows():
+            for col_cell in row:
+                docs.append(col_cell.value)
+
+        return docs, None
+    except Exception as e:   
+        return None, str(e)
+"""
+
+def get_data(input_file, job_id):
+    # Get data from XLSX file.
+    logger = logging.getLogger()
+
+    try:
+        # ------------------------ GET WORKBOOK -------------------------
+
+        wb = load_workbook(filename=input_file, data_only=True)
+
+        # ------------------------ GET CONFIG SHEET -------------------------
+
+        # XLSX files MUST have a SenTop config sheet.
+        config_ws = None
+        try:
+            config_ws = wb.get_sheet_by_name('SENTOP Config')
+            if not config_ws:
+                msg = 'SENTOP Config sheet not found. Aborting.'
+                logger.error(f'{msg}')
+                return None, msg
+        except Exception as e:   
+            print(traceback.format_exc())
+            return None, str(e)
+ 
+        # Get SenTop config data.
+        data_sheet_name = None
+        headers_row_index = None
+        id_column_letter = None
+        id_column_index = None
+        narrative_column_letter = None
+        narrative_column_index = None
+        annotation = None
+        user_stopwords = None
+        
+        # Config data starts in Row 4
+        try:
+            logger.info("Getting config data")
+            # Get mandatory data sheet name
+            data_sheet_name = config_ws.cell(row=4, column=1).value
+            if data_sheet_name:
+                logger.info(f"Found data sheet name: {data_sheet_name}")
+            else:
+                return None, "No data sheet name found in SENTOP Config sheet."
+
+            # Get mandatory headers row
+            headers_row_index = config_ws.cell(row=4, column=2).value
+            if headers_row_index:
+                logger.info(f"Found headers row: {headers_row_index}")
+            else:
+                return None, "No headers row found in SENTOP Config sheet."
+
+             # Get optional ID column
+            id_column_letter = config_ws.cell(row=4, column=3).value
+            if id_column_letter:
+                logger.info(f"Found ID column: {id_column_letter}")
+                id_column_index = column_letter_to_number(id_column_letter)
+                logger.info(f"Found ID column index: {id_column_index}")
+            else:
+                logger.info(f"No optional ID column found.")
+
+            # Get mandatory narrative column
+            narrative_column_letter = config_ws.cell(row=4, column=4).value
+            if narrative_column_letter:
+                logger.info(f"Found narratives column: {narrative_column_letter}")
+                narrative_column_index = column_letter_to_number(narrative_column_letter)
+                logger.info(f"Found narratives index: {narrative_column_index}")
+            else:
+                return None, "No narratives column found in SENTOP Config sheet."               
+
+            # Get optional annotation
+            annotation = config_ws.cell(row=4, column=5).value
+            if annotation:
+                logger.info(f"Found annotation: {annotation}")
+            else:
+                logger.info(f"No annotation: {annotation}")
+
+            # Get stop words
+            user_stopwords = get_user_stopwords(config_ws, row=4, column=6)
+            if user_stopwords:
+                logger.info(f"Found user stop words: {user_stopwords}")
+            else:
+                logger.info("No user stop words found in SENTOP Config sheet.")
+
+        except Exception as e:   
+            print(traceback.format_exc())
+            return None, str(e)
+
+        # ------------------------ GET DATA SHEET -------------------------
+        logger.info("Getting data sheet")
+        data_ws = None
+        try:
+            data_ws = wb.get_sheet_by_name(data_sheet_name)
+            if data_ws:
+                logger.info(f"Found SENTOP data sheet: {data_sheet_name}")
+            else:
+                logger.error(f"SENTOP data sheet not found. Aborting.")
+                return None, "SENTOP data sheet not found. Aborting."
+
+        except Exception as e:   
+            print(traceback.format_exc())
+            return None, str(e)
+
+        # ------------------------ GET TABLE HEADERS -------------------------
+        
+        id_column_index = None
+        id_header = None
+        corpus_column_index = None
+        corpus_header = None
+
+        row = data_ws[headers_row_index]
+        headers = []
+        for col_cell in row:
+            col_letter = get_column_letter(col_cell.column)
+            headers.append(col_cell.value)
+            if id_column_letter:
+                if id_column_letter == col_letter:
+                        id_header = col_cell.value
+                        id_column_index = col_cell.column 
+                        logger.debug(f"Found ID column header: {id_header}")
+            if narrative_column_letter:
+                if narrative_column_letter == col_letter:
+                        corpus_header = col_cell.value
+                        corpus_column_index = col_cell.column 
+                        logger.debug(f"Found corpus column header: {corpus_header}")
+                        logger.debug(f"Found corpus column index: {corpus_column_index}")
+
+        if not id_header:
+            logger.warning(f"Could not find ID column header")
+
+        if not corpus_header:
+            logger.error(f"Could not find corpus column header")
+            return None, "Could not find corpus column header."
+
+
+        # --------------------- GET ALL STOP WORDS ---------------------
+
+        #Stopwords are acquired in _sentop.py
+
+
+        # --------------------- GET ALL DATA CELLS ---------------------
+
+        # Get XLSX data.       
+        table_data = []
+        num_invalid_rows = 0
+        for row in data_ws.iter_rows():
+            row_num = row[0].row
+            #print(f"Row num: {row_num}")
+            if row_num <= headers_row_index:
+                logger.debug(f"Skipping header row {row_num}")
+                continue
+            else:
+                row_cols_data = []  # Row columns
+                for col_cell in row:    
+                    cell_value = col_cell.value
+                    if cell_value:
+                        row_cols_data.append(cell_value)
+                    else:
+                        row_cols_data.append('')
+                # Add row columns to table rows
+                table_data.append(row_cols_data)
+        
+        return XlsxDataIn(job_id, table_data, headers_row_index, headers, id_column_letter, id_column_index, narrative_column_letter, narrative_column_index, annotation, user_stopwords), None
+
+    except Exception as e:   
+        print(traceback.format_exc())
+        return None, str(e)
+
+
+
+def generate_excel(job_id, preprocessing_results, annotation, row_id_list, docs, sentiments, lda_results, bertopic_results, RESULTS_DIR):
+    logger = logging.getLogger()
 
     try:
         bert_sentence_topics = None
@@ -50,6 +318,9 @@ def generate_excel(id, annotation, row_id_list, docs, sentiments, lda_results, b
 
                 # Write preprocessed document
                 row_data.append(docs[i])
+
+                # Write preprocessor result
+                row_data.append(preprocessing_results[i])
 
                 # Write BERTopic topic
                 if bert_sentence_topics:
@@ -117,7 +388,8 @@ def generate_excel(id, annotation, row_id_list, docs, sentiments, lda_results, b
 
         # Create results XLSX
         wb = Workbook()
-        xlsx_out = RESULTS_DIR + "\\" + id + "_results.xlsx"
+        job_id = datetime.now().strftime('%m%d%Y_%H%M%S')
+        xlsx_out = RESULTS_DIR + "\\sentop_results_" + str(job_id) + ".xlsx"
         ws1 = wb.active
         ws1.title = "Results"
 
@@ -135,32 +407,33 @@ def generate_excel(id, annotation, row_id_list, docs, sentiments, lda_results, b
                     header = header.replace(" ", "_")
                     header = re.sub("[^0-9a-zA-Z_]+", "", header)
         '''
-        result_headers = ['ID', 'Document', 'BERTopic Topic', 'LDA Topic', 'Class-3', 'Class-5', 'Emotion-1', 'Emotion-2', 'Offensive-1']
+        result_headers = ['ID', 'Document', 'Preproc Status', 'BERTopic Topic', 'LDA Topic', 'Class-3', 'Class-5', 'Emotion-1', 'Emotion-2', 'Offensive-1']
         #result_headers.extend(headers)
         ws1.append(result_headers)
 
         ws1['A1'].font = Font(bold=True)
         ws1['B1'].font = Font(bold=True)
+        ws1['C1'].font = Font(bold=True)
 
         # Topic columns
-        ws1['C1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
-        ws1['C1'].font = Font(bold=True)
         ws1['D1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
         ws1['D1'].font = Font(bold=True)
+        ws1['E1'].fill = PatternFill(start_color='FF66FF66', end_color='FF66FF66', fill_type='solid')
+        ws1['E1'].font = Font(bold=True)
 
         # Polarity sentiment columns
-        ws1['E1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
-        ws1['E1'].font = Font(bold=True)
         ws1['F1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
         ws1['F1'].font = Font(bold=True)
+        ws1['G1'].fill = PatternFill(start_color='FF66FFFF', end_color='FF66FFFF', fill_type='solid')
+        ws1['G1'].font = Font(bold=True)
 
         # Emotion sentiment columns
-        ws1['G1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
-        ws1['G1'].font = Font(bold=True)
         ws1['H1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
         ws1['H1'].font = Font(bold=True)
         ws1['I1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
         ws1['I1'].font = Font(bold=True)
+        ws1['J1'].fill = PatternFill(start_color='FFFFFF99', end_color='FFFFFF99', fill_type='solid')
+        ws1['J1'].font = Font(bold=True)
 
         for i in range(len(rows)):
             ws1.append(rows[i])
@@ -251,6 +524,6 @@ def generate_excel(id, annotation, row_id_list, docs, sentiments, lda_results, b
 
         logger.info(f"Wrote Excel results to: {xlsx_out}")
     except Exception as e:
-        log_util.show_stack_trace(e)
+        print(traceback.format_exc())
         return None, str(e)
 

@@ -3,6 +3,7 @@ from sentop.util import log_util
 import logging
 import time
 import sys
+import traceback
 
 # Hugging Face transformer:
 model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
@@ -77,5 +78,5 @@ def assess(classifier, docs):
         logger.info(f"End 5-Class Polarity (elapsed: {elapsed_str})")
         return sentiments, None
     except Exception as e:
-        log_util.show_stack_trace(e)
+        print(traceback.format_exc())
         return None, str(e)

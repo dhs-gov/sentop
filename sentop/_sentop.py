@@ -35,9 +35,6 @@ class SenTop:
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
 
-        # Initialize logger
-        log_util.set_logging(self.config)
-
 
     def run_sentiment_analyses(self):
         logger = logging.getLogger('_sentop')
@@ -88,21 +85,15 @@ class SenTop:
         return sentiments, None
 
 
-    def run_lda(self):
-        all_stop_words = stopwords.get_all_stopwords(self.stop_words)
+    def run_lda(self, all_stop_words):
         topic_model, error = lda_tomotopy.assess(self.config, self.docs, all_stop_words)
         if error:
             return None, error
         elif topic_model:
             return topic_model, None
 
-    # Stop words are used for both LDA and BERTopic.
-    def set_stop_words(self, user_stop_words):
-        self.stop_words = user_stop_words
 
-
-    def run_bertopic(self):
-        all_stop_words = stopwords.get_all_stopwords(self.stop_words)
+    def run_bertopic(self, all_stop_words):
         topic_model, error = topmod_bertopic.assess(self.config, self.docs, all_stop_words)
         if error:
             return None, error
@@ -110,19 +101,8 @@ class SenTop:
             return topic_model, None
 
 
-    def preprocess(self, docs_in):
-        logger = logging.getLogger('_sentop')
-        logger.info('Preprocessing docs')
-        data = []
-        for i, doc in enumerate(docs_in):
-            print(f"Document {i} of {len(docs_in)}", end = "\r")
-            cleaned_doc = preprocess_util.initial_clean(doc)
-            truncated_doc = preprocess_util.transformer_truncate(i, cleaned_doc)
-            data.append(truncated_doc)
-        return data
-
-    
-    def run_analysis(self, docs_in, **kwargs):
+    def run_analysis(self, xslx_in):
+        
         logger = logging.getLogger('_sentop')
 
         # Generate execution ID
@@ -130,16 +110,23 @@ class SenTop:
         sentop_id = "sentop_" + str(datetime.datetime.now().strftime('%Y%m%d%H%M'))
         logger.info(f"sentop_id: {sentop_id}")
 
+        data_cols = list(zip(*xslx_in.table_data))
+        docs_in = data_cols[xslx_in.narrative_column_index-1] # Subtract 1 from Excel column index for correct Python column index
+        row_id_list = []
+        if xslx_in.id_column_index:
+            row_id_list = data_cols[xslx_in.id_column_index-1] # Subtract 1 from Excel column index for correct Python column index
+
         logger.info(f"Received {len(docs_in)} documents.")
+        #print(f"DOCS: {docs_in}")
 
-        # To reduce memory, we only keep the cleaned (not original) docs  
-        self.docs = self.preprocess(docs_in)
+        # ---------------------------- PREPROCESS -----------------------------
 
-        # Get kwargs values
-        if 'annotation' in kwargs:
-            self.annotation = kwargs.get("annotation")
-        logger.info(f"Found annotation: {self.annotation}")
+        # Preprocess
+        self.docs, self.preprocessor_statuses = preprocess_util.analyze(docs_in, self.config)
 
+        # ---------------------------- SENTIMENT ANALYSES -----------------------------
+
+        # Run sentiment analyses
         sentiments, error = self.run_sentiment_analyses()
         if error:
             logger.warning(error)
@@ -150,35 +137,41 @@ class SenTop:
             #print(sentiments.emotion2)
             #print(sentiments.offensive)
 
+        # ---------------------------- STOPWORDS FOR TOPIC MODELING -----------------------------
+
+        all_stop_words = preprocess_util.get_all_stopwords(xslx_in.user_stopwords)
+
+        # ---------------------------- LDA -----------------------------
+
         lda_results = None
 
         if self.config['LDA']['ENABLED'] == 'True':
             if len(self.docs) >= int(self.config['LDA']['MIN_DOCS']):
-                lda_results, error = self.run_lda()
+                lda_results, error = self.run_lda(all_stop_words)
                 if error:
                     logger.warning(error)
             else:
                 logger.warning("LDA error due to number of docs less than minimum required.")
 
+        # ---------------------------- BERTOPIC -----------------------------
+
         bertopic_results = None
 
         if self.config['BERTOPIC']['ENABLED'] == 'True':
             if len(self.docs) >= int(self.config['BERTOPIC']['MIN_DOCS']):
-                bertopic_results, error = self.run_bertopic()
+                bertopic_results, error = self.run_bertopic(all_stop_words)
                 if error:
                     logger.warning(error)
             else:
                 logger.warning("BERTopic error due to number of docs less than minimum required.")
 
-
         # ---------------------------- RESULTS TO XLSX -----------------------------
 
-        row_id_list = []
         RESULTS_DIR = self.config['RESULTS']['OUTPUT_DIR']
         #RESULTS_FORMAT = self.config['RESULTS']['RESULTS_FORMAT']
         RESULTS_FORMAT = 'XLSX'  # Set for now.
         if RESULTS_FORMAT == 'XLSX':
-            xlsx_util.generate_excel(sentop_id, self.annotation, row_id_list, self.docs, sentiments, lda_results, bertopic_results, RESULTS_DIR)
+            xlsx_util.generate_excel(xslx_in.job_id, self.preprocessor_statuses, xslx_in.annotation, row_id_list, self.docs, sentiments, lda_results, bertopic_results, RESULTS_DIR)
             logger.info(f"Wrote Excel XLSX file|Completed")
         else:
             logger.warning(f"Results format '{RESULTS_FORMAT} not supported.")

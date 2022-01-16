@@ -8,7 +8,7 @@ from . import topic_util
 import logging
 import time
 from sentop.util import log_util
-
+import traceback
 
 def check_overlapping_words_across_topics(topic_model, topics_no_duplicates):
     overlapping_words = []
@@ -58,7 +58,7 @@ def get_topics_words_list(topic_per_row, topic_model, print_topics):
             logger.info(f"\n{topic_model.get_topic_freq()}") # .head()
         return topics_list, None
     except Exception as e:
-        log_util.show_stack_trace(e)
+        print(traceback.format_exc())
         return None, str(e)
 
 
@@ -106,7 +106,7 @@ def get_default_topics(docs, stopwords, NUM_WORDS_TOPIC, MAX_NGRAM):
 
         return "Default BERTopic", topic_model, topics, topics_list, overlapping_words, None
     except Exception as e:
-        log_util.show_stack_trace(e)
+        print(traceback.format_exc())
         return None, None, None, None, None, str(e)
 
 
@@ -175,7 +175,7 @@ def get_best_model_name(rows, all_stop_words, NUM_WORDS_TOPIC, MAX_NGRAM):
                     logger.error(f"Could not generate topics using model {model_name}.")
                     continue
             except Exception as e:  #raised if `y` is empty.
-                log_util.show_stack_trace(f"BERTopic could not generate topics or probabilities with model {model_name}: {str(e)}.")
+                print(traceback.format_exc())
                 continue
 
             unique_topics = np.unique(topic_per_row)
@@ -251,7 +251,7 @@ def get_best_model_name(rows, all_stop_words, NUM_WORDS_TOPIC, MAX_NGRAM):
         return best_model_name, best_topic_model, best_topic_per_row, best_topics_list, best_overlapping_words, None
         
     except Exception as e:
-        log_util.show_stack_trace(e)
+        print(traceback.format_exc())
         return None, None, None, None, None, str(e)
 
 def assess(config, docs, all_stop_words):
@@ -309,7 +309,7 @@ def assess(config, docs, all_stop_words):
         return topic_model_results, None
 
     except Exception as e:
-        log_util.show_stack_trace(e)
+        print(traceback.format_exc())
         return None, str(e)
 
 
