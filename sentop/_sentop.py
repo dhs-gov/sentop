@@ -85,21 +85,21 @@ class SenTop:
         return sentiments, None
 
 
-    def run_lda(self, all_stop_words):
+    """def run_lda(self, all_stop_words):
         topic_model, error = lda_tomotopy.assess(self.config, self.docs, all_stop_words)
         if error:
             return None, error
         elif topic_model:
             return topic_model, None
+    """
 
-
-    def run_bertopic(self, all_stop_words):
+    """def run_bertopic(self, all_stop_words):
         topic_model, error = topmod_bertopic.assess(self.config, self.docs, all_stop_words)
         if error:
             return None, error
         elif topic_model:
             return topic_model, None
-
+    """
 
     def run_analysis(self, xslx_in):
         
@@ -147,7 +147,9 @@ class SenTop:
 
         if self.config['LDA']['ENABLED'] == 'True':
             if len(self.docs) >= int(self.config['LDA']['MIN_DOCS']):
-                lda_results, error = self.run_lda(all_stop_words)
+                lda_results, error = lda_tomotopy.assess(self.config, self.docs, all_stop_words)
+
+                #lda_results, error = self.run_lda(all_stop_words)
                 if error:
                     logger.warning(error)
             else:
@@ -159,7 +161,9 @@ class SenTop:
 
         if self.config['BERTOPIC']['ENABLED'] == 'True':
             if len(self.docs) >= int(self.config['BERTOPIC']['MIN_DOCS']):
-                bertopic_results, error = self.run_bertopic(all_stop_words)
+                bertopic_results, error = topmod_bertopic.assess(self.config, self.docs, all_stop_words)
+
+                #bertopic_results, error = self.run_bertopic(all_stop_words)
                 if error:
                     logger.warning(error)
             else:

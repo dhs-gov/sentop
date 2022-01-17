@@ -25,7 +25,63 @@ def check_overlapping_words_across_topics(topic_model, topics_no_duplicates):
     return overlapping_words
 
 
-def get_topics_words_list(topic_per_row, topic_model, print_topics):
+class NgramInfo:
+    def __init__(self, num_words, ngram, keep, weight):
+        # Read user configuration
+        self.num_words = num_words
+        self.ngram = ngram
+        self.keep = keep
+        self.weight = weight
+
+def same_words(ngram1, ngram2):
+    ngram2_words = ngram2.split()
+    num_ngram2_words = len(ngram2_words)
+    num_matches = 0
+    for i in range(0, num_ngram2_words):
+        if ngram2_words[i] in ngram1:
+            num_matches = num_matches + 1
+    if num_matches == num_ngram2_words:
+        return True
+    else:
+        return False
+
+def remove_duplicate_ngram_words(words_list, weights_list):
+    # Find largest grams
+    print(f"WORDS LIST: {words_list}, weights: {weights_list}")
+    highest_num_ngram_words = 0
+    ngrams_list = []
+    # Get the ngram with most number of words
+    for i, ngram in enumerate(words_list):
+        words = ngram.split()
+        num_ngram_words = len(words)
+        ngram_info = NgramInfo(num_ngram_words, ngram, True, weights_list[i])
+        ngrams_list.append(ngram_info)
+
+    # Sort ngrams by highest num words
+    ngrams_list.sort(key=lambda x: x.num_words, reverse=True)
+
+    print(f"SORTED")
+    for i, ngram1 in enumerate(ngrams_list):
+        print(f"{ngram1.ngram}, weight: {ngram1.weight}")
+        for j, ngram2 in enumerate(ngrams_list):
+            # Check if ngram2 is in ngram1. If so, set ngram2.keep to False
+            if ngram2.ngram in ngram1.ngram and i != j:
+                ngram2.keep = False
+            elif same_words(ngram1.ngram, ngram2.ngram) and i != j:
+                ngram2.keep = False
+    print(f"REMOVED DUPLICATES")
+    new_words_list = []
+    new_weights_list = []
+    for i, n in enumerate(ngrams_list):
+        print(f"{n.ngram}, keep: {n.keep}")
+        if n.keep == True:
+            new_words_list.append(n.ngram)
+            new_weights_list.append(n.weight)
+
+    return new_words_list, new_weights_list
+
+
+def get_topics_words_list(topic_per_row, topic_model, print_topics, REMOVE_DUPLICATE_NGRAM_WORDS):
     try:
         logger = logging.getLogger('topmod_bertopic')
         topics_no_duplicates = []
@@ -50,6 +106,10 @@ def get_topics_words_list(topic_per_row, topic_model, print_topics):
                 if print_topics:
                     logger.info("- " + word[0] + ", " + str(word[1]))
 
+            # Reduce duplicate ngram words
+            if bool(REMOVE_DUPLICATE_NGRAM_WORDS) == True:
+                words_list, weights_list = remove_duplicate_ngram_words(words_list, weights_list)
+
             topic = topic_util.Topic(n, words_list, weights_list)
             topics_list.append(topic)
 
@@ -72,24 +132,32 @@ def get_topic_overlap_words(topic_per_row, topic_model):
     return overlapping_words_across_topics
 
 
-def get_default_topics(docs, stopwords, NUM_WORDS_TOPIC, MAX_NGRAM):
+def get_default_topics(docs, stopwords, NUM_TOPICS, NUM_WORDS_TOPIC, MAX_NGRAM, REMOVE_DUPLICATE_NGRAM_WORDS):
     try:
         logger = logging.getLogger('topmod_bertopic')
         #topic_model = BERTopic()
         vectorizer_model = CountVectorizer(ngram_range=(1, int(MAX_NGRAM)), stop_words=stopwords)
         #embedding_model = TransformerDocumentEmbeddings(model_name)   
-        topic_model = BERTopic(top_n_words = int(NUM_WORDS_TOPIC), vectorizer_model=vectorizer_model)
+        nr_topics = None
+        if NUM_TOPICS == 'AUTO':
+            nr_topics = 'auto'
+        elif NUM_TOPICS.isnumeric():
+            nr_topics = int(NUM_TOPICS)
+
+        topic_model = BERTopic(nr_topics = nr_topics, top_n_words = int(NUM_WORDS_TOPIC), vectorizer_model=vectorizer_model)
         # Set random seed OFF by setting to int
         seed = 9999
         logger.debug(f"Umap Seed: {seed}")
         topic_model.umap_model.random_state = seed
+
         # Get the topics
         topics, probs = topic_model.fit_transform(docs)
         if not topics:
             # Topics could not be generated
-            logger.error(f"Could not generate topics.")
+            logger.error(f"BERTopic could not generate topics.")
+            return None, None, None, None, None, "BERTopic could not generate topics."
 
-        topics_list, error = get_topics_words_list(topics, topic_model, True)
+        topics_list, error = get_topics_words_list(topics, topic_model, True, REMOVE_DUPLICATE_NGRAM_WORDS)
         if error:
             return None, None, None, None, None, error
 
@@ -103,6 +171,12 @@ def get_default_topics(docs, stopwords, NUM_WORDS_TOPIC, MAX_NGRAM):
             outlier_perc = outlier_num / len(docs)
 
         overlapping_words = get_topic_overlap_words(topics, topic_model)
+
+        # Visualize (these don't display in VS Code)
+        print('Visualize 1')
+        topic_model.visualize_topics()
+        print('Visualize 2')
+        topic_model.visualize_barchart()
 
         return "Default BERTopic", topic_model, topics, topics_list, overlapping_words, None
     except Exception as e:
@@ -120,7 +194,7 @@ def get_default_topics(docs, stopwords, NUM_WORDS_TOPIC, MAX_NGRAM):
 # may mean that outliers are forced into a topic, skewing the most salient
 # top words for each topic. Allowing for some outliers permits more 
 # focused topics (i.e., topics comprising more salient words).
-def get_best_model_name(rows, all_stop_words, NUM_WORDS_TOPIC, MAX_NGRAM):
+def get_best_model_name(rows, all_stop_words, NUM_WORDS_TOPIC, MAX_NGRAM, REMOVE_DUPLICATE_NGRAM_WORDS):
     try:
         logger = logging.getLogger('topmod_bertopic')
         best_topic_model = None
@@ -203,7 +277,7 @@ def get_best_model_name(rows, all_stop_words, NUM_WORDS_TOPIC, MAX_NGRAM):
                 best_num_overlapping_words = len(best_overlapping_words)
                 best_topic_model = topic_model
                 best_topic_per_row = topic_per_row
-                best_topics_list = get_topics_words_list(topic_per_row, topic_model, False)
+                best_topics_list = get_topics_words_list(topic_per_row, topic_model, False, REMOVE_DUPLICATE_NGRAM_WORDS)
 
             elif outlier_perc == best_outlier_perc:
 
@@ -278,14 +352,18 @@ def assess(config, docs, all_stop_words):
         if MODE != 'DEFAULT' and MODE != 'MULTI':
             MODE = 'DEFAULT'
 
+        NUM_TOPICS = config['BERTOPIC']['NUM_TOPICS']
+
+        REMOVE_DUPLICATE_NGRAM_WORDS = config['BERTOPIC']['REMOVE_DUPLICATE_NGRAM_WORDS']
+
         # --------------------------- GET TOPICS -------------------------
 
         if MODE == 'DEFAULT':
             logger.info("Using default BERTopic configuration")
-            model, topic_model, topics, topics_list, overlapping_words, error = get_default_topics(docs, all_stop_words, NUM_WORDS_TOPIC, MAX_NGRAM)
+            model, topic_model, topics, topics_list, overlapping_words, error = get_default_topics(docs, all_stop_words, NUM_TOPICS, NUM_WORDS_TOPIC, MAX_NGRAM, REMOVE_DUPLICATE_NGRAM_WORDS)
         else:
             logger.info("Using multi-model BERTopic configuration")
-            model, topic_model, topics, topics_list, overlapping_words, error = get_best_model_name(docs, all_stop_words, NUM_WORDS_TOPIC, MAX_NGRAM)
+            model, topic_model, topics, topics_list, overlapping_words, error = get_best_model_name(docs, all_stop_words, NUM_WORDS_TOPIC, MAX_NGRAM, REMOVE_DUPLICATE_NGRAM_WORDS)
     
         if error:
             return None, error
