@@ -15,9 +15,8 @@ from datetime import datetime
 
 class XlsxDataIn ():
 
-    def __init__(self, job_id, table_data, headers_row_index, headers, id_column_letter, id_column_index, narrative_column_letter, narrative_column_index, annotation, user_stopwords):
+    def __init__(self, table_data, headers_row_index, headers, id_column_letter, id_column_index, narrative_column_letter, narrative_column_index, annotation, user_stopwords):
 
-        self.job_id = job_id
         self.table_data = table_data
         self.headers_row_index = headers_row_index
         self.headers = headers
@@ -31,10 +30,6 @@ class XlsxDataIn ():
 
     def show_info(self):
         logger = logging.getLogger()
-        if self.job_id:
-            logger.debug(f"JOB ID: {self.job_id}")
-        else:
-            logger.error("No JOB ID for this data.")
 
         if self.table_data:
             logger.debug(f"Table data rows: {len(self.table_data)}, cols: {len(self.headers)}")
@@ -105,7 +100,7 @@ def get_xlsx_file(file_path):
         return None, str(e)
 """
 
-def get_data(input_file, job_id):
+def get_data(input_file):
     # Get data from XLSX file.
     logger = logging.getLogger()
 
@@ -265,7 +260,7 @@ def get_data(input_file, job_id):
                 # Add row columns to table rows
                 table_data.append(row_cols_data)
         
-        return XlsxDataIn(job_id, table_data, headers_row_index, headers, id_column_letter, id_column_index, narrative_column_letter, narrative_column_index, annotation, user_stopwords), None
+        return XlsxDataIn(table_data, headers_row_index, headers, id_column_letter, id_column_index, narrative_column_letter, narrative_column_index, annotation, user_stopwords), None
 
     except Exception as e:   
         print(traceback.format_exc())
@@ -273,7 +268,8 @@ def get_data(input_file, job_id):
 
 
 
-def generate_excel(job_id, preprocessing_results, annotation, row_id_list, docs, sentiments, lda_results, bertopic_results, RESULTS_DIR):
+def generate_excel(results_name, preprocessing_results, annotation, 
+    row_id_list, docs, sentiments, lda_results, bertopic_results, RESULTS_DIR):
     logger = logging.getLogger()
 
     try:
@@ -388,8 +384,8 @@ def generate_excel(job_id, preprocessing_results, annotation, row_id_list, docs,
 
         # Create results XLSX
         wb = Workbook()
-        job_id = datetime.now().strftime('%m%d%Y_%H%M%S')
-        xlsx_out = RESULTS_DIR + "\\sentop_results_" + str(job_id) + ".xlsx"
+        #job_id = datetime.now().strftime('%m%d%Y_%H%M%S')
+        xlsx_out = RESULTS_DIR + "\\sentop_results_" + str(results_name) + ".xlsx"
         ws1 = wb.active
         ws1.title = "Results"
 

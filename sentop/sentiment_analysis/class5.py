@@ -24,18 +24,24 @@ def calc_sentiment(confidence_score):
     largest_score_str = "{:6.4f}".format(largest_score).lstrip()
 
     if "1 star" in largest_label:
-        return "1_star (" + largest_score_str + ")"
+        #return "1_star (" + largest_score_str + ")"
+        return "1_star"
     elif "2 stars" in largest_label:
-        return "2_stars (" + largest_score_str + ")"
+        #return "2_stars (" + largest_score_str + ")"
+        return "2_stars"
     elif "3 stars" in largest_label:
-        return "3_stars (" + largest_score_str + ")"
+        #return "3_stars (" + largest_score_str + ")"
+        return "3_stars"
     elif "4 stars" in largest_label:
-        return "4_stars (" + largest_score_str + ")"
+        #return "4_stars (" + largest_score_str + ")"
+        return "4_stars"
     elif "5 stars" in largest_label:
-        return "5_stars (" + largest_score_str + ")"
+        #return "5_stars (" + largest_score_str + ")"
+        return "5_stars"
     else:
         logging.getLogger('class5').warning(f"Unknown sentiment: {largest_label}")
-        return "neutral " + largest_score_str
+        #return "neutral " + largest_score_str
+        return "3_stars"
         
 
 def get_sentiment(classifier, text):

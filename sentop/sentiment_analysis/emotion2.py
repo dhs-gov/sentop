@@ -1,7 +1,7 @@
 from sentop.util import log_util
 import logging
 import time
-
+import traceback
 
 # Hugging Face transformer:
 model_name = "monologg/bert-base-cased-goemotions-original"
@@ -18,7 +18,8 @@ def calc_sentiment(confidence_score):
 
     largest_score_str = "{:6.4f}".format(largest_score).lstrip()
     labels = largest_label.split()
-    return labels[0] + " (" + largest_score_str + ")"
+    #return labels[0] + " (" + largest_score_str + ")"
+    return labels[0]
         
 
 def get_sentiment(classifier, text):

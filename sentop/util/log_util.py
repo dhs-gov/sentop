@@ -6,12 +6,16 @@ import logging
 import traceback
 
 # Logging utils
-def set_config(config):
+def set_config(config, override_path):
 
     ENABLE_LOG_FILE = config['LOGGING']['ENABLE_LOG_FILE']
     print(f"ENABLE_LOG_FILE: {ENABLE_LOG_FILE}")
 
-    LOG_FILE_PATH = config['LOGGING']['LOG_FILE_PATH']
+    LOG_FILE_PATH = None
+    if override_path:
+        LOG_FILE_PATH = override_path
+    else:
+        LOG_FILE_PATH = config['LOGGING']['LOG_FILE_PATH']
     print(f"LOG_FILE_PATH: {LOG_FILE_PATH}")
 
     LOGGING_LEVEL = config['LOGGING']['LOGGING_LEVEL']
@@ -58,5 +62,6 @@ def enable_logging():
         'version': 1,
         'disable_existing_loggers': False,
     })
+
 
 

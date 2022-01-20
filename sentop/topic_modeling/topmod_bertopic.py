@@ -46,8 +46,17 @@ def same_words(ngram1, ngram2):
         return False
 
 def remove_duplicate_ngram_words(words_list, weights_list):
+    logger = logging.getLogger()
+
+    # First remove duplicate words per ngram
+    new_words_list = []
+    for i, ngram in enumerate(words_list):
+        words = ngram.split()
+        new_words_list.append(" ".join(sorted(set(words), key=words.index)))
+    words_list = new_words_list
+
     # Find largest grams
-    print(f"WORDS LIST: {words_list}, weights: {weights_list}")
+    logger.info(f"WORDS LIST: {words_list}, weights: {weights_list}")
     highest_num_ngram_words = 0
     ngrams_list = []
     # Get the ngram with most number of words
@@ -59,21 +68,22 @@ def remove_duplicate_ngram_words(words_list, weights_list):
 
     # Sort ngrams by highest num words
     ngrams_list.sort(key=lambda x: x.num_words, reverse=True)
-
-    print(f"SORTED")
+    logger.info(f"SORTED")
+    # Remove duplicate NGRAM words
     for i, ngram1 in enumerate(ngrams_list):
-        print(f"{ngram1.ngram}, weight: {ngram1.weight}")
+        logger.info(f"{ngram1.ngram}, weight: {ngram1.weight}")
         for j, ngram2 in enumerate(ngrams_list):
             # Check if ngram2 is in ngram1. If so, set ngram2.keep to False
-            if ngram2.ngram in ngram1.ngram and i != j:
+            if ngram1.keep == True and ngram2.ngram in ngram1.ngram and i != j:
                 ngram2.keep = False
-            elif same_words(ngram1.ngram, ngram2.ngram) and i != j:
+            elif ngram1.keep == True and same_words(ngram1.ngram, ngram2.ngram) and i != j:
                 ngram2.keep = False
-    print(f"REMOVED DUPLICATES")
+    logger.info(f"REMOVED DUPLICATES")
+
     new_words_list = []
     new_weights_list = []
     for i, n in enumerate(ngrams_list):
-        print(f"{n.ngram}, keep: {n.keep}")
+        logger.info(f"{n.ngram}, keep: {n.keep}")
         if n.keep == True:
             new_words_list.append(n.ngram)
             new_weights_list.append(n.weight)
@@ -83,14 +93,14 @@ def remove_duplicate_ngram_words(words_list, weights_list):
 
 def get_topics_words_list(topic_per_row, topic_model, print_topics, REMOVE_DUPLICATE_NGRAM_WORDS):
     try:
-        logger = logging.getLogger('topmod_bertopic')
+        logger = logging.getLogger()
         topics_no_duplicates = []
         for t in topic_per_row:
             if t not in topics_no_duplicates:
                 topics_no_duplicates.append(t)
 
         topics_list = []
-        print(f"Num topics: {len(topics_no_duplicates)}")
+        logger.info(f"Num topics: {len(topics_no_duplicates)}")
 
         for n in topics_no_duplicates:
             if print_topics:

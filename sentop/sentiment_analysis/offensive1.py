@@ -1,7 +1,7 @@
 from sentop.util import log_util
 import logging
 import time
-
+import traceback
 
 # Hugging Face transformer:
 model_name = "cardiffnlp/twitter-roberta-base-offensive"
@@ -19,12 +19,15 @@ def calc_sentiment(confidence_score):
 
     largest_score_str = "{:6.4f}".format(largest_score).lstrip()
     if "LABEL_0" in largest_label:
-        return "not_offensive (" + largest_score_str + ")"
+        #return "not_offensive (" + largest_score_str + ")"
+        return "not_offensive"
     elif "LABEL_1" in largest_label:
-        return "offensive (" + largest_score_str + ")"
+        #return "offensive (" + largest_score_str + ")"
+        return "offensive"
     else:
         logging.getLogger('emotion1').warning(f"Unknown sentiment: {largest_label}")
-        return "optimism (" + largest_score_str + ")"
+        #return "optimism (" + largest_score_str + ")"
+        return "not_offensive"
         
 
 def get_sentiment(classifier, text):

@@ -36,7 +36,7 @@ def calc_sentiment(confidence_score):
 
 def get_sentiment(classifier, text):
 
-    log_util.block_logging()
+    log_util.disable_logging()
     with log_util.suppress_stdout_stderr():
 
         confidence_scores = classifier.tag_text(

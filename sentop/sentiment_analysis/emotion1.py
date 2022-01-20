@@ -2,9 +2,10 @@ from sentop.util import log_util
 import logging
 import time
 import sys
+import traceback
 
 # Hugging Face transformer:
-model_name = "cardiffnlp/twitter-roberta-base-emotion"
+model_name = "bhadresh-savani/bert-base-uncased-emotion"
 
 
 
@@ -13,22 +14,34 @@ def calc_sentiment(confidence_score):
     largest_score = 0.000000
 
     for label in confidence_score.labels:
+        #print(f"Label: {label}")
         if label.score > largest_score:
             largest_label = str(label)
             largest_score = label.score
 
     largest_score_str = "{:6.4f}".format(largest_score).lstrip()
-    if "LABEL_0" in largest_label:
-        return "anger (" + largest_score_str + ")"
-    elif "LABEL_1" in largest_label:
-        return "joy (" + largest_score_str + ")"
-    elif "LABEL_2" in largest_label:
-        return "optimism (" + largest_score_str + ")"
-    elif "LABEL_3" in largest_label:
-        return "sadness (" + largest_score_str + ")" 
+    if "sadness" in largest_label:
+        #return "anger (" + largest_score_str + ")"
+        return "sadness"
+    elif "joy" in largest_label:
+        #return "joy (" + largest_score_str + ")"
+        return "joy"
+    elif "love" in largest_label:
+        #return "optimism (" + largest_score_str + ")"
+        return "love"
+    elif "anger" in largest_label:
+        #return "sadness (" + largest_score_str + ")" 
+        return "anger"
+    elif "fear" in largest_label:
+        #return "sadness (" + largest_score_str + ")" 
+        return "fear"   
+    elif "surprise" in largest_label:
+        #return "sadness (" + largest_score_str + ")" 
+        return "surprise"   
     else:
         logging.getLogger('emotion1').warning(f"Unknown sentiment: {largest_label}")
-        return "optimism (" + largest_score_str + ")"
+        #return "optimism (" + largest_score_str + ")"
+        return "love"
         
 
 def get_sentiment(classifier, text):
