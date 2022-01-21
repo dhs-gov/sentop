@@ -22,11 +22,11 @@ st.run_analysis(docs, annotation="My dataset")
 
 Sentiment analysis is performed using [AdaptNLP](https://github.com/Novetta/adaptnlp) with state-of-the-art (SOTA) [Hugging Face Transformers](https://github.com/huggingface/transformers).  SenTop provides multiple sentiment analyses (confidence scores also available):
 
-1. [RoBERTa Base Sentiment](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment) for 3-class sentiment -- based on Facebook AI's [RoBERTa](https://ai.facebook.com/blog/roberta-an-optimized-method-for-pretraining-self-supervised-nlp-systems/)
-2. [BERT Base Multilingual Uncased Sentiment](https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment) for 5-class sentiment -- based on Google's [Bidirectional Encoder Representations from Transformers (BERT)](https://en.wikipedia.org/wiki/BERT_(language_model))
+1. [RoBERTa Base Sentiment](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment) for 3-class polarity -- based on Facebook AI's [RoBERTa](https://ai.facebook.com/blog/roberta-an-optimized-method-for-pretraining-self-supervised-nlp-systems/)
+2. [BERT Base Multilingual Uncased Sentiment](https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment) for 5-class polarity -- based on Google's [Bidirectional Encoder Representations from Transformers (BERT)](https://en.wikipedia.org/wiki/BERT_(language_model))
 3. [Twitter roBERTa-base for Emotion Recognition](https://huggingface.co/cardiffnlp/twitter-roberta-base-emotion) for 4-class emotion recognition
 4. [BERT-base-cased Geomotions (Original)](https://huggingface.co/monologg/bert-base-cased-goemotions-original) for 28-class emotion recognition
-5. [Twitter roBERTa-base for Offensive Language Identification](https://huggingface.co/cardiffnlp/twitter-roberta-base-offensive) for 2-class offensive language detection
+5. [Twitter roBERTa-base for Offensive Language Identification](https://huggingface.co/cardiffnlp/twitter-roberta-base-offensive) for 2-class offensive language recognition
 
 ## Topic Modeling
 
