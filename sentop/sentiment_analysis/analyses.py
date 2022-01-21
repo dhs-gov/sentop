@@ -134,13 +134,13 @@ class AnalysesResults:
         for x in self.bertopic_offensive1:
             print(f"{x}")       
 
-    #--------- LDA Topics Per Sentiment
+    #--------- Sentiments Per LDA
 
-    def set_sentiments_lda(self, lda_class3_counts):
-        self.lda_class3_counts = lda_class3_counts
+    def set_3class_lda(self, class3_lda):
+        self.class3_lda = class3_lda
         print(f"LDA per 3-Class:")
-        for i, x in enumerate(self.lda_class3_counts):
-            print(f"i: {x}")
+        for x in self.class3_lda:
+            print(f"{x}")
 
 
 
@@ -260,7 +260,7 @@ def run(row_id_list, preprocessor_statuses, sentiments, lda_results, bertopic_re
         logger.info(f"BERTopic turned off")
 
 
-    # ---------------------------- LDA TOPIC SENTIMENTS -----------------------------
+    # ---------------------------- SENTIMENTS PER LDA TOPIC -----------------------------
 
     if lda_results and sentiments.class3:
         logger.info(f"3-Class per LDA topic:")
@@ -448,25 +448,37 @@ def run(row_id_list, preprocessor_statuses, sentiments, lda_results, bertopic_re
 
 
     # ---------------------------- LDA TOPICS PER SENTIMENT -----------------------------
-    """
-    unique_3class = None
-    if sentiments.class3 and lda_results:
-        unique_3class = unique(sentiments.class3)
-        # Initialize list for storing LDA topic counts
-        lda_class3_counts = [0] * len(unique_3class)
-        print(f"Class-3 COUNTS: {lda_class3_counts}")
+ 
+    if lda_results and sentiments.class3:
+        logger.info(f"LDA topic per 3-Class:")
+        lda_topic_per_3class = []
+        #unique_3class = len(class3.mappings)
+        unique_lda = len(unique(lda_results.topic_per_row))
+        unique_sentiments = list(class3.mappings.values())
 
-        logger.info(f"3-Class per LDA:")
-        for sentiment in enumerate(sentiments.class3):
-            topic_num = lda_results[i]
-            lda_class3_counts[topic_num] = lda_class3_counts[topic_num] + 1
-    
-    
-    
-    results.set_sentiments_lda(lda_class3_counts)
+        #for unique_topic in unique_lda_topics:
+        for unique_sentiment in unique_sentiments:
+            #class3_counts = [0] * unique_3class
+            lda_counts = [0] * unique_lda
 
-    """
+            #for i, topic in enumerate(lda_results.topic_per_row):
+            for i, sentiment in enumerate(sentiments.class3):
+                #if unique_topic == topic:
+                if unique_sentiment == sentiment:
+                    #sent_index = int(class3.get_sentiment_index(sentiments.class3[i]))
+                    topic_index = int(lda_results.topic_per_row[i])
+                    #class3_counts[sent_index] = class3_counts[sent_index] + 1
+                    lda_counts[topic_index] = lda_counts[topic_index] + 1
 
+            # Insert unique topic number at front of list
+            #class3_counts.insert(0, unique_topic)   
+            lda_counts.insert(0, unique_sentiment)       
+            lda_topic_per_3class.append(lda_counts)
+
+        #results.set_lda_3class(lda_topic_per_3class)
+        results.set_3class_lda(lda_topic_per_3class)
+    else:
+        logger.info(f"LDA or 3-Class turned off")
 
 
 
@@ -476,9 +488,7 @@ def run(row_id_list, preprocessor_statuses, sentiments, lda_results, bertopic_re
 
 
 
-    #emotion1 = sentiments.emotion1
-    #emotion2 = sentiments.emotion2
-    #offensive1 = sentiments.offensive1
+
 
 
 
