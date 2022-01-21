@@ -6,6 +6,20 @@ import traceback
 # Hugging Face transformer:
 model_name = "cardiffnlp/twitter-roberta-base-offensive"
 
+# Label mapping key index and sentiment label value
+mappings = {
+  "0": "offensive",
+  "1": "not_offensive"
+}
+
+def get_sentiment_label(index):
+    return mappings[str(index)]
+
+def get_sentiment_index(label):
+    for key, value in mappings.items():
+         if label == value:
+             return key
+    return None
 
 def calc_sentiment(confidence_score):
     largest_label = 'LABEL_0'

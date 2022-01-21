@@ -69,7 +69,7 @@ class SenTop:
             if error:
                 return None, error
             elif class5_results:
-                sentiments.star5 = class5_results
+                sentiments.class5 = class5_results
 
         if self.config['SENTIMENT_ANALYSIS']['EMOTION1'] == 'True':
             emotion1_results, error = emotion1.assess(classifier, self.docs)
@@ -245,7 +245,7 @@ class SenTop:
     
 class Sentiments:
     class3 = None
-    star5 = None
+    class5 = None
     emotion1 = None
     emotion2 = None
     offensive1 = None

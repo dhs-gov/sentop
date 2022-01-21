@@ -6,6 +6,47 @@ import traceback
 # Hugging Face transformer:
 model_name = "monologg/bert-base-cased-goemotions-original"
 
+# Label mapping key index and sentiment label value
+mappings = {
+    "0": "admiration",
+    "1": "amusement",
+    "2": "disapproval",
+    "3": "disgust",
+    "4": "embarrassment",
+    "5": "excitement",
+    "6": "fear",
+    "7": "gratitude",
+    "8": "grief",
+    "9": "joy",
+    "10": "love",
+    "11": "nervousness",
+    "12": "anger",
+    "13": "optimism",
+    "14": "pride",
+    "15": "realization",
+    "16": "relief",
+    "17": "remorse",
+    "18": "sadness",
+    "19": "surprise",
+    "20": "neutral",
+    "21": "annoyance",
+    "22": "approval",
+    "23": "caring",
+    "24": "confusion",
+    "25": "curiosity",
+    "26": "desire",
+    "27": "disappointment"
+}
+
+def get_sentiment_label(index):
+    return mappings[str(index)]
+
+def get_sentiment_index(label):
+    for key, value in mappings.items():
+         if label == value:
+             return key
+    print(f"WARNING: No key found for label '{label}'")
+    return None
 
 def calc_sentiment(confidence_score):
     largest_label = 'LABEL_0' 

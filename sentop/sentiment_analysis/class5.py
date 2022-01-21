@@ -8,6 +8,23 @@ import traceback
 # Hugging Face transformer:
 model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
 
+# Label mapping key index and sentiment label value
+mappings = {
+  "0": "1_star",
+  "1": "2_stars",
+  "2": "3_stars",
+  "3": "4_stars",
+  "4": "5_stars"
+}
+
+def get_sentiment_label(index):
+    return mappings[str(index)]
+
+def get_sentiment_index(label):
+    for key, value in mappings.items():
+         if label == value:
+             return key
+    return None
 
 # Get sentiment label with highest confidence score. Note that we do not 
 # return confidence values for all labels.

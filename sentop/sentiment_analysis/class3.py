@@ -12,6 +12,23 @@ import traceback
 
 model_name = "cardiffnlp/twitter-roberta-base-sentiment"
 
+# Label mapping key index and sentiment label value
+mappings = {
+  "0": "negative",
+  "1": "neutral",
+  "2": "positive"
+}
+
+def get_sentiment_label(index):
+    return mappings[str(index)]
+
+def get_sentiment_index(label):
+    for key, value in mappings.items():
+         if label == value:
+             return key
+    return None
+
+
 def calc_sentiment(confidence_score):
     largest_label = 'LABEL_0'
     largest_score = 0.0

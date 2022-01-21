@@ -7,7 +7,24 @@ import traceback
 # Hugging Face transformer:
 model_name = "bhadresh-savani/bert-base-uncased-emotion"
 
+# Label mapping key index and sentiment label value
+mappings = {
+  "0": "sadness",
+  "1": "joy",
+  "2": "love",
+  "3": "anger",
+  "4": "fear",
+  "5": "surprise"
+}
 
+def get_sentiment_label(index):
+    return mappings[str(index)]
+
+def get_sentiment_index(label):
+    for key, value in mappings.items():
+         if label == value:
+             return key
+    return None
 
 def calc_sentiment(confidence_score):
     largest_label = 'LABEL_0'

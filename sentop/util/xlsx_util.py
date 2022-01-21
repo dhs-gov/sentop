@@ -296,7 +296,7 @@ def generate_excel(results_name, preprocessing_results, annotation,
         output_dir_path = RESULTS_DIR
 
         class3 = sentiments.class3
-        class5 = sentiments.star5
+        class5 = sentiments.class5
         emotion1 = sentiments.emotion1
         emotion2 = sentiments.emotion2
         offensive1 = sentiments.offensive1
