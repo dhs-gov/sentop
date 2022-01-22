@@ -1,5 +1,5 @@
 '''
-This model classifies sentiment polaritys using the following labels:
+This model classifies sentiment polarities using the following labels:
 negative
 neutral
 positive

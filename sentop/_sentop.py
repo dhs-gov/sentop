@@ -71,12 +71,12 @@ class SenTop:
             elif class5_results:
                 sentiments.class5 = class5_results
 
-        if self.config['SENTIMENT_ANALYSIS']['EMOTION1'] == 'True':
+        """if self.config['SENTIMENT_ANALYSIS']['EMOTION1'] == 'True':
             emotion1_results, error = emotion1.assess(classifier, self.docs)
             if error:
                 return None, error
             elif emotion1_results:
-                sentiments.emotion1 = emotion1_results
+                sentiments.emotion1 = emotion1_results"""
 
         if self.config['SENTIMENT_ANALYSIS']['EMOTION2'] == 'True':
             emotion2_results, error = emotion2.assess(classifier, self.docs)
@@ -220,7 +220,7 @@ class SenTop:
         if RESULTS_FORMAT == 'XLSX':
             xlsx_util.generate_excel(self.job_id, self.preprocessor_statuses, \
                 xslx_in.annotation, row_id_list, self.docs, sentiments, \
-                    lda_results, bertopic_results, RESULTS_DIR)
+                    lda_results, bertopic_results, analyses_results, RESULTS_DIR)
             logger.info(f"Wrote Excel XLSX file|Completed")
         else:
             logger.warning(f"Results format '{RESULTS_FORMAT} not supported.")

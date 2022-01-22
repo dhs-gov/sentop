@@ -384,8 +384,8 @@ def assess(config, docs, all_stop_words):
         logger.info(f"Topic word overlap")
         logger.info(f"Num topic word overlap|{len(overlapping_words)}")
 
-        for x in overlapping_words:
-            logger.info(f"- {x}")
+        #for x in overlapping_words:
+        #    logger.info(f"- {x}")
         
         topic_model_results = topic_util.TopicModelResults(topics, topics_list, overlapping_words)
         

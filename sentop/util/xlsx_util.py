@@ -12,6 +12,11 @@ import logging
 import traceback
 from datetime import datetime
 
+from ..sentiment_analysis import class3 as sent_class3
+from ..sentiment_analysis import class5 as sent_class5
+from ..sentiment_analysis import emotion2 as sent_emotion2
+from ..sentiment_analysis import offensive1 as sent_offensive1
+
 
 class XlsxDataIn ():
 
@@ -269,7 +274,8 @@ def get_data(input_file):
 
 
 def generate_excel(results_name, preprocessing_results, annotation, 
-    row_id_list, docs, sentiments, lda_results, bertopic_results, RESULTS_DIR):
+    row_id_list, docs, sentiments, lda_results, bertopic_results, analyses_results, 
+    RESULTS_DIR):
     logger = logging.getLogger()
 
     try:
@@ -442,8 +448,8 @@ def generate_excel(results_name, preprocessing_results, annotation,
         ws4.append(annotation_list)
 
         # Create BERTopic topics data
+        bert_rows = []
         if bert_topics:
-            rows = []
 
             for i in range(len(bert_topics)):
                 for j in range(len(bert_topics[i].words)):
@@ -451,16 +457,16 @@ def generate_excel(results_name, preprocessing_results, annotation,
                     row_data.append(bert_topics[i].topic_num)
                     row_data.append(bert_topics[i].words[j])
                     row_data.append(float(bert_topics[i].weights[j]))
-                    rows.append(row_data)
+                    bert_rows.append(row_data)
 
             # Create BERTopic topics data XLSX sheet
             ws2 = wb.create_sheet(title="BERTopic")
             ws2.append(['Topic', 'Top Words', 'Weight'])
-            for i in range(len(rows)):
-                ws2.append(rows[i])
+            for i in range(len(bert_rows)):
+                ws2.append(bert_rows[i])
 
             # Create BERTopic non-overlapping topic words data
-            rows = []
+            bert_rows_nonoverlapping = []
             for i in range(len(bert_topics)):
                 for j in range(len(bert_topics[i].words)):
                     if not bert_topics[i].words[j] in bert_duplicate_words:
@@ -468,17 +474,17 @@ def generate_excel(results_name, preprocessing_results, annotation,
                         row_data.append(bert_topics[i].topic_num)
                         row_data.append(bert_topics[i].words[j])
                         row_data.append(float(bert_topics[i].weights[j]))
-                        rows.append(row_data)
+                        bert_rows_nonoverlapping.append(row_data)
 
             # Create BERTopic non-overlapping topics data XLSX sheet
             ws2 = wb.create_sheet(title="BERTopic Non-Overlapping Topics")
             ws2.append(['Topic', 'Top Words', 'Weight'])
-            for i in range(len(rows)):
-                ws2.append(rows[i])  
+            for i in range(len(bert_rows_nonoverlapping)):
+                ws2.append(bert_rows_nonoverlapping[i])  
 
         # Create LDA topics data
+        lda_rows = []
         if lda_topics:
-            rows = []
             for i in range(len(lda_topics)):
                 #print("LDA i: ", i)
                 for j in range(len(lda_topics[i].words)):
@@ -487,17 +493,17 @@ def generate_excel(results_name, preprocessing_results, annotation,
                     row_data.append(lda_topics[i].topic_num)
                     row_data.append(lda_topics[i].words[j])
                     row_data.append(float(lda_topics[i].weights[j]))
-                    rows.append(row_data)
+                    lda_rows.append(row_data)
 
             # Create LDA topics data XLSX sheet
             ws3 = wb.create_sheet(title="LDA")
             fields = ['Topic', 'Top Words', 'Weight']
             ws3.append(fields)
-            for i in range(len(rows)):
-                ws3.append(rows[i])
+            for i in range(len(lda_rows)):
+                ws3.append(lda_rows[i])
 
             # Create LDA non-overlapping topics words data
-            rows = []
+            lda_rows_nonoverlapping = []
             for i in range(len(lda_topics)):
                 #print("LDA i: ", i)
                 for j in range(len(lda_topics[i].words)):
@@ -506,14 +512,453 @@ def generate_excel(results_name, preprocessing_results, annotation,
                         row_data.append(lda_topics[i].topic_num)
                         row_data.append(lda_topics[i].words[j])
                         row_data.append(float(lda_topics[i].weights[j]))
-                        rows.append(row_data)
+                        lda_rows_nonoverlapping.append(row_data)
 
             # Create LDA topics data XLSX sheet
             ws3 = wb.create_sheet(title="LDA Non-Overlapping Topics")
             fields = ['Topic', 'Top Words', 'Weight']
             ws3.append(fields)
+            for i in range(len(lda_rows_nonoverlapping)):
+                ws3.append(lda_rows_nonoverlapping[i])
+
+
+        #------------------------------ ANALYSES ---------------------------------
+
+
+        def write_sentiments(title, item_counts_list, sent_type):
+            print(f"Writing {title}")
+            rows = []
+            for i, sentiment_count in enumerate(item_counts_list):
+                sentiment_label = sent_type.get_sentiment_label(i)
+                row_data = []
+                row_data.append(sentiment_label)
+                row_data.append(sentiment_count)
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title=title)
+            # Create header row
+            ws2.append(['Sentiment', 'Count'])
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
             for i in range(len(rows)):
-                ws3.append(rows[i])
+                ws2.append(rows[i])
+        
+
+        def write_topics(title, occurance_list, topic_numbers, topics):
+            print(f"Writing {title}")
+            rows = []
+            for i, topic_count in enumerate(occurance_list):
+                topic_number = topic_numbers[i]
+                topic = topics[i]
+                topic_label = ','.join(topic.words)
+                row_data = []
+                row_data.append(topic_number)
+                row_data.append(topic_label)
+                row_data.append(topic_count)
+                rows.append(row_data)
+            # Create offensive-1 sheet
+            ws2 = wb.create_sheet(title=title)
+            # Create header row
+            ws2.append(['Topic Num', 'Topic', 'Count'])
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write data
+            for i in range(len(rows)):
+                ws2.append(rows[i])
+
+
+        def write_topics_with_sentiments(title, occurance_list, topics, sent_type):
+            print(f"Writing {title}")
+            rows = []
+            for i, topic_sent in enumerate(occurance_list):
+                #topic_number = analyses_results.lda_topics_list[i]
+                topic = topics[i]
+                topic_label = ','.join(topic.words)
+                row_data = []
+                row_data.append(topic_sent[0])
+                row_data.append(topic_label)
+                for i in range(1, len(topic_sent)):
+                    row_data.append(topic_sent[i])
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title=title)
+            # Create headers
+            header_list1 = ['Topic Num', 'Topic']
+            header_list2 = list(sent_type.mappings.values())
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])
+
+
+        def write_sentiments_with_topics(title, occurance_list, topics):
+            print(f"Writing {title}")
+            rows = []
+            for i, sent_topic in enumerate(occurance_list):
+                row_data = []
+                row_data.append(sent_topic[0]) # Sentiment label
+                for i in range(1, len(sent_topic)):
+                    row_data.append(sent_topic[i]) # Topic numbers
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title=title)
+            # Create headers
+            header_list1 = ['Sentiment']
+            header_list2 = topics
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])
+
+
+        # -------------------- Sentiments
+
+        # Create class 3
+        if analyses_results.class3_counts:
+            write_sentiments("Analyses_Class-3", analyses_results.class3_counts, sent_class3)
+
+        # Create class 5
+        if analyses_results.class5_counts:
+            write_sentiments("Analyses_Class-5", analyses_results.class5_counts, sent_class5)
+
+        # Create Emotion-2
+        if analyses_results.emotion2_counts:
+            write_sentiments("Analyses_Emotion-2", analyses_results.emotion2_counts, sent_emotion2)
+
+        # Create Offensive-1
+        if analyses_results.offensive1_counts:
+            write_sentiments("Analyses_Offensive-1", analyses_results.offensive1_counts, sent_offensive1)
+
+        # -------------------- Topics
+
+        # LDA
+        if analyses_results.lda_occurrence_list:
+            write_topics("Analyses_LDA", \
+                analyses_results.lda_occurrence_list, \
+                analyses_results.lda_topics_list, lda_topics)
+
+        # BERTopic
+        if analyses_results.bertopic_occurrence_list:
+            write_topics("Analyses_BERTopic", 
+                analyses_results.bertopic_occurrence_list, \
+                analyses_results.bertopic_topics_list, bert_topics)
+
+        # -------------------- LDA Sentiments
+
+        # LDA 3-class
+        if analyses_results.lda_3class:
+            write_topics_with_sentiments("Analyses_LDA-3Class", \
+                analyses_results.lda_3class, \
+                lda_topics, sent_class3)
+
+
+        # LDA 5-class
+        if analyses_results.lda_5class:
+
+            write_topics_with_sentiments("Analyses_LDA-5Class", \
+                analyses_results.lda_5class, \
+                lda_topics, sent_class5)
+
+
+        # LDA Emotion-2
+        if analyses_results.lda_emotion2:
+
+            write_topics_with_sentiments("Analyses_LDA-Emotion2", \
+                analyses_results.lda_emotion2, \
+                lda_topics, sent_emotion2)
+
+
+        # LDA Offensive-1
+        if analyses_results.lda_offensive1:
+
+            write_topics_with_sentiments("Analyses_LDA-Offensive1", \
+                analyses_results.lda_offensive1, \
+                lda_topics, sent_offensive1)
+
+
+        # -------------------- Sentiment LDA
+
+        # 3-class LDA Topics
+        if analyses_results.class3_lda:
+            write_sentiments_with_topics("Analyses_Class3-LDA", \
+                analyses_results.class3_lda, \
+                analyses_results.lda_topics_list)
+
+            """rows = []
+            for i, class3_topic in enumerate(analyses_results.class3_lda):
+                row_data = []
+                row_data.append(class3_topic[0]) # Sentiment label
+                for i in range(1, len(class3_topic)):
+                    row_data.append(class3_topic[i]) # Topic numbers
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title="Analyses_Class3-LDA")
+            # Create headers
+            header_list1 = ['Sentiment']
+            header_list2 = analyses_results.lda_topics_list
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])"""
+
+        # 5-class LDA Topics
+        if analyses_results.class5_lda:
+            write_sentiments_with_topics("Analyses_Class5-LDA", \
+                analyses_results.class5_lda, \
+                analyses_results.lda_topics_list)
+            """rows = []
+            for i, class5_topic in enumerate(analyses_results.class5_lda):
+                row_data = []
+                row_data.append(class5_topic[0]) # Sentiment label
+                for i in range(1, len(class5_topic)):
+                    row_data.append(class5_topic[i]) # Topic numbers
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title="Analyses_Class5-LDA")
+            # Create headers
+            header_list1 = ['Sentiment']
+            header_list2 = analyses_results.lda_topics_list
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])"""
+
+        # Emotion-2 LDA Topics
+        if analyses_results.emotion2_lda:
+
+            write_sentiments_with_topics("Analyses_Emotion2-LDA", \
+                analyses_results.emotion2_lda, \
+                analyses_results.lda_topics_list)
+            """rows = []
+            for i, emotion2_topic in enumerate(analyses_results.emotion2_lda):
+                row_data = []
+                row_data.append(emotion2_topic[0]) # Sentiment label
+                #row_data.append(topic_label)
+                for i in range(1, len(emotion2_topic)):
+                    row_data.append(emotion2_topic[i]) # Topic numbers
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title="Analyses_Emotion2-LDA")
+            # Create headers
+            header_list1 = ['Sentiment']
+            header_list2 = analyses_results.lda_topics_list
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])"""
+
+        # Offensive-1 LDA Topics
+        if analyses_results.offensive1_lda:
+
+            write_sentiments_with_topics("Analyses_Offensive1-LDA", \
+                analyses_results.offensive1_lda, \
+                analyses_results.lda_topics_list)
+
+            """rows = []
+            for i, offensive1_topic in enumerate(analyses_results.offensive1_lda):
+                row_data = []
+                row_data.append(offensive1_topic[0]) # Sentiment label
+                #row_data.append(topic_label)
+                for i in range(1, len(offensive1_topic)):
+                    row_data.append(offensive1_topic[i]) # Topic numbers
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title="Analyses_Offensive1-LDA")
+            # Create headers
+            header_list1 = ['Sentiment']
+            header_list2 = analyses_results.lda_topics_list
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])"""
+
+
+       # -------------------- BERTopic Sentiments
+
+        # BERTopic 3-class
+        if analyses_results.bertopic_3class:
+
+            write_topics_with_sentiments("Analyses_BERTopic-3Class", \
+                analyses_results.bertopic_3class, \
+                bert_topics, sent_class3)
+
+
+        # BERTopic 5-class
+        if analyses_results.bertopic_5class:
+
+            write_topics_with_sentiments("Analyses_BERTopic-5Class", \
+                analyses_results.bertopic_5class, \
+                bert_topics, sent_class5)
+                
+
+        # BERTopic Emotion-2
+        if analyses_results.bertopic_emotion2:
+
+            write_topics_with_sentiments("Analyses_BERTopic-Emotion2", \
+                analyses_results.bertopic_emotion2, \
+                bert_topics, sent_emotion2)
+
+
+        # BERTopic Offensive-1
+        if analyses_results.bertopic_offensive1:
+
+            write_topics_with_sentiments("Analyses_BERTopic-Offensive1", \
+                analyses_results.bertopic_offensive1, \
+                bert_topics, sent_offensive1)
+                
+
+       # -------------------- Sentiment BERTopic
+
+        # 3-class BERTopic Topics
+        if analyses_results.class3_bertopic:
+
+           write_sentiments_with_topics("Analyses_Class3-BERTopic", \
+                analyses_results.class3_bertopic, \
+                analyses_results.bertopic_topics_list)
+
+        """
+            rows = []
+            for i, class3_topic in enumerate(analyses_results.class3_bertopic):
+                row_data = []
+                row_data.append(class3_topic[0]) # Sentiment label
+                for i in range(1, len(class3_topic)):
+                    row_data.append(class3_topic[i]) # Topic numbers
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title="Analyses_Class3-BERTopic")
+            # Create headers
+            header_list1 = ['Sentiment']
+            header_list2 = analyses_results.bertopic_topics_list
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])"""
+
+        # 5-class BERTopic Topics
+        if analyses_results.class5_bertopic:
+
+           write_sentiments_with_topics("Analyses_Class5-BERTopic", \
+                analyses_results.class5_bertopic, \
+                analyses_results.bertopic_topics_list)
+
+        """rows = []
+            for i, class5_topic in enumerate(analyses_results.class5_bertopic):
+                row_data = []
+                row_data.append(class5_topic[0]) # Sentiment label
+                for i in range(1, len(class5_topic)):
+                    row_data.append(class5_topic[i]) # Topic numbers
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title="Analyses_Class5-BERTopic")
+            # Create headers
+            header_list1 = ['Sentiment']
+            header_list2 = analyses_results.bertopic_topics_list
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])"""
+
+        # Emotion-2 BERTopic Topics
+        if analyses_results.emotion2_bertopic:
+
+           write_sentiments_with_topics("Analyses_Emotion2-BERTopic", \
+                analyses_results.emotion2_bertopic, \
+                analyses_results.bertopic_topics_list)
+
+        """
+            rows = []
+            for i, emotion2_topic in enumerate(analyses_results.emotion2_bertopic):
+                row_data = []
+                row_data.append(emotion2_topic[0]) # Sentiment label
+                for i in range(1, len(emotion2_topic)):
+                    row_data.append(emotion2_topic[i]) # Topic numbers
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title="Analyses_Emotion2-BERTopic")
+            # Create headers
+            header_list1 = ['Sentiment']
+            header_list2 = analyses_results.bertopic_topics_list
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])"""
+
+        # Offensive-1 LDA Topics
+        if analyses_results.offensive1_bertopic:
+
+           write_sentiments_with_topics("Analyses_Offensive1-BERTopic", \
+                analyses_results.offensive1_bertopic, \
+                analyses_results.bertopic_topics_list)
+
+        """
+            rows = []
+            for i, offensive1_topic in enumerate(analyses_results.offensive1_bertopic):
+                row_data = []
+                row_data.append(offensive1_topic[0]) # Sentiment label
+                for i in range(1, len(offensive1_topic)):
+                    row_data.append(offensive1_topic[i]) # Topic numbers
+  
+                rows.append(row_data)
+            # Create sheet
+            ws2 = wb.create_sheet(title="Analyses_Offensive1-BERTopic")
+            # Create headers
+            header_list1 = ['Sentiment']
+            header_list2 = analyses_results.bertopic_topics_list
+            headers = header_list1 + header_list2
+            ws2.append(headers)
+            # Bold header row 1
+            for cell in ws2["1:1"]:
+                cell.font = Font(bold=True)
+            # Write the data
+            for i in range(len(rows)):
+                ws2.append(rows[i])"""
 
         # Save XLSX
         wb.save(filename = xlsx_out)
