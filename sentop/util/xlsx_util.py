@@ -83,27 +83,6 @@ def column_letter_to_number(c):
         number+=ord(l.upper())-64+25
     return number
 
-"""
-def get_xlsx_file(file_path):
-    import openpyxl
-
-    try:
-        if not exists(file_path):
-            return None, f"Can't find file at: {file_path}."
-        wb = openpyxl.load_workbook(filename=file_path, data_only=True)
-        print(wb.sheetnames)
-        #ws = wb.get_sheet_by_name('Sheet1')
-        ws = wb.worksheets[0]    
-        # data list of [id-col,val]            
-        docs = [] 
-        for row in ws.iter_rows():
-            for col_cell in row:
-                docs.append(col_cell.value)
-
-        return docs, None
-    except Exception as e:   
-        return None, str(e)
-"""
 
 def get_data(input_file):
     # Get data from XLSX file.
