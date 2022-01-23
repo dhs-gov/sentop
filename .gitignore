@@ -6,6 +6,7 @@ tokenizers/
 tokenizers/punkt/
 *.pickle
 config.ini
+user_defined_data_columns.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
