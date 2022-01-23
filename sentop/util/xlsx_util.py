@@ -366,25 +366,6 @@ def generate_excel(results_name, preprocessing_results, annotation,
                 else:
                     row_data.append("N/A") 
 
-                '''
-                if table_data:
-                    table_row = table_data[i]
-                
-                    #print(f"cols type: {type(table_row)}, cols length: {len(table_row)}, cols val: {table_row}")
-                    vals = ""
-                    for j in range (len(table_row)):
-                        #print(f"j: {j}")
-                        val = table_row[j]
-                        if not val or val == 'None':
-                            val = ""
-                        
-                        val = str(val)  # Make sure val is converted to string
-                        val = val.strip('"')  # Remove double quotes from string
-                        val = val.replace('"', "") # Remove single quotes from string
-                        vals = vals + "\"" + str(val) + "\","  # Add double quotes around entire val
-                        row_data.append(val)
-                        #print(f"Vals: {vals}")
-                '''
 
                 rows.append(row_data)
 
@@ -396,19 +377,6 @@ def generate_excel(results_name, preprocessing_results, annotation,
         ws1.title = "Results"
 
         # Create column headers
-        '''
-        headers = []
-        if table_col_headers:
-            # Get the table headers
-            for header in table_col_headers:
-                #print(f"Header start: {header}")
-                if header is None:
-                    header = "na"
-                else:
-                    header = header.replace("-","_")
-                    header = header.replace(" ", "_")
-                    header = re.sub("[^0-9a-zA-Z_]+", "", header)
-        '''
         result_headers = ['ID', 'Document', 'Preproc Status', 'BERTopic Topic', 'LDA Topic', 'Class-3', 'Class-5', 'Emotion-1', 'Emotion-2', 'Offensive-1']
         #result_headers.extend(headers)
         ws1.append(result_headers)
@@ -696,54 +664,13 @@ def generate_excel(results_name, preprocessing_results, annotation,
                 analyses_results.class3_lda, \
                 analyses_results.lda_topics_list)
 
-            """rows = []
-            for i, class3_topic in enumerate(analyses_results.class3_lda):
-                row_data = []
-                row_data.append(class3_topic[0]) # Sentiment label
-                for i in range(1, len(class3_topic)):
-                    row_data.append(class3_topic[i]) # Topic numbers
-  
-                rows.append(row_data)
-            # Create sheet
-            ws2 = wb.create_sheet(title="Analyses_Class3-LDA")
-            # Create headers
-            header_list1 = ['Sentiment']
-            header_list2 = analyses_results.lda_topics_list
-            headers = header_list1 + header_list2
-            ws2.append(headers)
-            # Bold header row 1
-            for cell in ws2["1:1"]:
-                cell.font = Font(bold=True)
-            # Write the data
-            for i in range(len(rows)):
-                ws2.append(rows[i])"""
 
         # 5-class LDA Topics
         if analyses_results.class5_lda:
             write_sentiments_with_topics("Analyses_Class5-LDA", \
                 analyses_results.class5_lda, \
                 analyses_results.lda_topics_list)
-            """rows = []
-            for i, class5_topic in enumerate(analyses_results.class5_lda):
-                row_data = []
-                row_data.append(class5_topic[0]) # Sentiment label
-                for i in range(1, len(class5_topic)):
-                    row_data.append(class5_topic[i]) # Topic numbers
-  
-                rows.append(row_data)
-            # Create sheet
-            ws2 = wb.create_sheet(title="Analyses_Class5-LDA")
-            # Create headers
-            header_list1 = ['Sentiment']
-            header_list2 = analyses_results.lda_topics_list
-            headers = header_list1 + header_list2
-            ws2.append(headers)
-            # Bold header row 1
-            for cell in ws2["1:1"]:
-                cell.font = Font(bold=True)
-            # Write the data
-            for i in range(len(rows)):
-                ws2.append(rows[i])"""
+
 
         # Emotion-2 LDA Topics
         if analyses_results.emotion2_lda:
@@ -751,28 +678,6 @@ def generate_excel(results_name, preprocessing_results, annotation,
             write_sentiments_with_topics("Analyses_Emotion2-LDA", \
                 analyses_results.emotion2_lda, \
                 analyses_results.lda_topics_list)
-            """rows = []
-            for i, emotion2_topic in enumerate(analyses_results.emotion2_lda):
-                row_data = []
-                row_data.append(emotion2_topic[0]) # Sentiment label
-                #row_data.append(topic_label)
-                for i in range(1, len(emotion2_topic)):
-                    row_data.append(emotion2_topic[i]) # Topic numbers
-  
-                rows.append(row_data)
-            # Create sheet
-            ws2 = wb.create_sheet(title="Analyses_Emotion2-LDA")
-            # Create headers
-            header_list1 = ['Sentiment']
-            header_list2 = analyses_results.lda_topics_list
-            headers = header_list1 + header_list2
-            ws2.append(headers)
-            # Bold header row 1
-            for cell in ws2["1:1"]:
-                cell.font = Font(bold=True)
-            # Write the data
-            for i in range(len(rows)):
-                ws2.append(rows[i])"""
 
         # Offensive-1 LDA Topics
         if analyses_results.offensive1_lda:
@@ -780,29 +685,6 @@ def generate_excel(results_name, preprocessing_results, annotation,
             write_sentiments_with_topics("Analyses_Offensive1-LDA", \
                 analyses_results.offensive1_lda, \
                 analyses_results.lda_topics_list)
-
-            """rows = []
-            for i, offensive1_topic in enumerate(analyses_results.offensive1_lda):
-                row_data = []
-                row_data.append(offensive1_topic[0]) # Sentiment label
-                #row_data.append(topic_label)
-                for i in range(1, len(offensive1_topic)):
-                    row_data.append(offensive1_topic[i]) # Topic numbers
-  
-                rows.append(row_data)
-            # Create sheet
-            ws2 = wb.create_sheet(title="Analyses_Offensive1-LDA")
-            # Create headers
-            header_list1 = ['Sentiment']
-            header_list2 = analyses_results.lda_topics_list
-            headers = header_list1 + header_list2
-            ws2.append(headers)
-            # Bold header row 1
-            for cell in ws2["1:1"]:
-                cell.font = Font(bold=True)
-            # Write the data
-            for i in range(len(rows)):
-                ws2.append(rows[i])"""
 
 
        # -------------------- BERTopic Sentiments
@@ -848,28 +730,6 @@ def generate_excel(results_name, preprocessing_results, annotation,
                 analyses_results.class3_bertopic, \
                 analyses_results.bertopic_topics_list)
 
-        """
-            rows = []
-            for i, class3_topic in enumerate(analyses_results.class3_bertopic):
-                row_data = []
-                row_data.append(class3_topic[0]) # Sentiment label
-                for i in range(1, len(class3_topic)):
-                    row_data.append(class3_topic[i]) # Topic numbers
-  
-                rows.append(row_data)
-            # Create sheet
-            ws2 = wb.create_sheet(title="Analyses_Class3-BERTopic")
-            # Create headers
-            header_list1 = ['Sentiment']
-            header_list2 = analyses_results.bertopic_topics_list
-            headers = header_list1 + header_list2
-            ws2.append(headers)
-            # Bold header row 1
-            for cell in ws2["1:1"]:
-                cell.font = Font(bold=True)
-            # Write the data
-            for i in range(len(rows)):
-                ws2.append(rows[i])"""
 
         # 5-class BERTopic Topics
         if analyses_results.class5_bertopic:
@@ -878,27 +738,6 @@ def generate_excel(results_name, preprocessing_results, annotation,
                 analyses_results.class5_bertopic, \
                 analyses_results.bertopic_topics_list)
 
-        """rows = []
-            for i, class5_topic in enumerate(analyses_results.class5_bertopic):
-                row_data = []
-                row_data.append(class5_topic[0]) # Sentiment label
-                for i in range(1, len(class5_topic)):
-                    row_data.append(class5_topic[i]) # Topic numbers
-  
-                rows.append(row_data)
-            # Create sheet
-            ws2 = wb.create_sheet(title="Analyses_Class5-BERTopic")
-            # Create headers
-            header_list1 = ['Sentiment']
-            header_list2 = analyses_results.bertopic_topics_list
-            headers = header_list1 + header_list2
-            ws2.append(headers)
-            # Bold header row 1
-            for cell in ws2["1:1"]:
-                cell.font = Font(bold=True)
-            # Write the data
-            for i in range(len(rows)):
-                ws2.append(rows[i])"""
 
         # Emotion-2 BERTopic Topics
         if analyses_results.emotion2_bertopic:
@@ -907,28 +746,6 @@ def generate_excel(results_name, preprocessing_results, annotation,
                 analyses_results.emotion2_bertopic, \
                 analyses_results.bertopic_topics_list)
 
-        """
-            rows = []
-            for i, emotion2_topic in enumerate(analyses_results.emotion2_bertopic):
-                row_data = []
-                row_data.append(emotion2_topic[0]) # Sentiment label
-                for i in range(1, len(emotion2_topic)):
-                    row_data.append(emotion2_topic[i]) # Topic numbers
-  
-                rows.append(row_data)
-            # Create sheet
-            ws2 = wb.create_sheet(title="Analyses_Emotion2-BERTopic")
-            # Create headers
-            header_list1 = ['Sentiment']
-            header_list2 = analyses_results.bertopic_topics_list
-            headers = header_list1 + header_list2
-            ws2.append(headers)
-            # Bold header row 1
-            for cell in ws2["1:1"]:
-                cell.font = Font(bold=True)
-            # Write the data
-            for i in range(len(rows)):
-                ws2.append(rows[i])"""
 
         # Offensive-1 LDA Topics
         if analyses_results.offensive1_bertopic:
@@ -937,28 +754,6 @@ def generate_excel(results_name, preprocessing_results, annotation,
                 analyses_results.offensive1_bertopic, \
                 analyses_results.bertopic_topics_list)
 
-        """
-            rows = []
-            for i, offensive1_topic in enumerate(analyses_results.offensive1_bertopic):
-                row_data = []
-                row_data.append(offensive1_topic[0]) # Sentiment label
-                for i in range(1, len(offensive1_topic)):
-                    row_data.append(offensive1_topic[i]) # Topic numbers
-  
-                rows.append(row_data)
-            # Create sheet
-            ws2 = wb.create_sheet(title="Analyses_Offensive1-BERTopic")
-            # Create headers
-            header_list1 = ['Sentiment']
-            header_list2 = analyses_results.bertopic_topics_list
-            headers = header_list1 + header_list2
-            ws2.append(headers)
-            # Bold header row 1
-            for cell in ws2["1:1"]:
-                cell.font = Font(bold=True)
-            # Write the data
-            for i in range(len(rows)):
-                ws2.append(rows[i])"""
 
         # Save XLSX
         wb.save(filename = xlsx_out)
