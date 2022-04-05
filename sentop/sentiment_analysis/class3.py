@@ -52,7 +52,7 @@ def calc_sentiment(confidence_score):
         
 
 def get_sentiment(classifier, text):
-
+    #print(f"text: {text}")
     log_util.disable_logging()
     with log_util.suppress_stdout_stderr():
 
@@ -66,6 +66,8 @@ def get_sentiment(classifier, text):
     log_util.enable_logging()
 
     # This should only loop once
+    if not confidence_scores:
+        print(f"No confidence_scores available.")
     for confidence_score in confidence_scores:
         return calc_sentiment(confidence_score)
 

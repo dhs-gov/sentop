@@ -20,7 +20,8 @@ from ..sentiment_analysis import offensive1 as sent_offensive1
 
 class XlsxDataIn ():
 
-    def __init__(self, table_data, headers_row_index, headers, id_column_letter, id_column_index, narrative_column_letter, narrative_column_index, annotation, user_stopwords):
+    def __init__(self, table_data, headers_row_index, headers, \
+        id_column_letter, id_column_index, narrative_column_letter, narrative_column_index, annotation, user_stopwords):
 
         self.table_data = table_data
         self.headers_row_index = headers_row_index
@@ -498,7 +499,12 @@ def generate_excel(results_name, preprocessing_results, annotation,
             for i, topic_count in enumerate(occurance_list):
                 topic_number = topic_numbers[i]
                 topic = topics[i]
-                topic_label = ','.join(topic.words)
+                topic_label = ', '.join(topic.words)
+                if (topic_number < 10):
+                    # This is to make sure charts labels are ordered properly in Excel
+                    topic_label = " " + str(topic_number) + ": " + topic_label
+                else:
+                    topic_label = str(topic_number) + ": " + topic_label
                 row_data = []
                 row_data.append(topic_number)
                 row_data.append(topic_label)
@@ -522,7 +528,8 @@ def generate_excel(results_name, preprocessing_results, annotation,
             for i, topic_sent in enumerate(occurance_list):
                 #topic_number = analyses_results.lda_topics_list[i]
                 topic = topics[i]
-                topic_label = ','.join(topic.words)
+                topic_label = ', '.join(topic.words)
+                topic_label = str(topic_sent[0]) + ": " + topic_label
                 row_data = []
                 row_data.append(topic_sent[0])
                 row_data.append(topic_label)
