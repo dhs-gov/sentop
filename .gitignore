@@ -5,7 +5,6 @@ test.py
 tokenizers/
 tokenizers/punkt/
 *.pickle
-config.ini
 user_defined_excel_columns.txt
 
 # Byte-compiled / optimized / DLL files
