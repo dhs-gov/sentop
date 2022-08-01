@@ -4,7 +4,6 @@
 
 SenTop combines sentiment analysis and topic modeling into a single capability allowing for sentiments to be derived per topic and for topics to be derived per sentiment. 
 
-
 ## Installation
 To install with pypi, use:
 ```
