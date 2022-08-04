@@ -1,3 +1,4 @@
+"""
 import io
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font
@@ -748,4 +749,4 @@ def generate_excel(results_name, preprocessing_results, annotation,
     except Exception as e:
         print(traceback.format_exc())
         return None, str(e)
-
+"""
