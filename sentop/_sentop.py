@@ -5,13 +5,13 @@ from sentop.sentiment_analysis import emotion1
 from sentop.sentiment_analysis import emotion2
 from sentop.sentiment_analysis import offensive1 
 from sentop.sentiment_analysis import analyses 
-from sentop.topic_modeling import lda_tomotopy
-from sentop.topic_modeling import topmod_bertopic
-from sentop.topic_modeling import stopwords
+from nlp import lda_topic_modeling
+from nlp import bertopic_topic_modeling
+from nlp import stopwords
 from sentop.util import preprocess_util
 from sentop.util import log_util
 from sentop.util import xlsx_util
-from adaptnlp import EasySequenceClassifier
+#from adaptnlp import EasySequenceClassifier
 import logging
 import configparser
 from datetime import datetime
@@ -48,6 +48,7 @@ class SenTop:
         self.job_id = job_id
 
 
+    """
     def run_sentiment_analyses(self):
         logger = logging.getLogger('_sentop')
         logger.info("Computing Sentiment Analyses")
@@ -71,12 +72,12 @@ class SenTop:
             elif class5_results:
                 sentiments.class5 = class5_results
 
-        """if self.config['SENTIMENT_ANALYSIS']['EMOTION1'] == 'True':
+        if self.config['SENTIMENT_ANALYSIS']['EMOTION1'] == 'True':
             emotion1_results, error = emotion1.assess(classifier, self.docs)
             if error:
                 return None, error
             elif emotion1_results:
-                sentiments.emotion1 = emotion1_results"""
+                sentiments.emotion1 = emotion1_results
 
         if self.config['SENTIMENT_ANALYSIS']['EMOTION2'] == 'True':
             emotion2_results, error = emotion2.assess(classifier, self.docs)
@@ -95,7 +96,7 @@ class SenTop:
             print(f"Offensive config is: {self.config['SENTIMENT_ANALYSIS']['OFFENSIVE1']}")
 
         return sentiments, None
-
+    """
 
     """def run_lda(self, all_stop_words):
         topic_model, error = lda_tomotopy.assess(self.config, self.docs, all_stop_words)
@@ -175,7 +176,7 @@ class SenTop:
 
         if self.config['LDA']['ENABLED'] == 'True':
             if len(self.docs) >= int(self.config['LDA']['MIN_DOCS']):
-                lda_results, error = lda_tomotopy.assess(self.config, self.docs, all_stop_words)
+                lda_results, error = lda_topic_modeling.assess(self.config, self.docs, all_stop_words)
 
                 #lda_results, error = self.run_lda(all_stop_words)
                 if error:
@@ -193,7 +194,7 @@ class SenTop:
 
         if self.config['BERTOPIC']['ENABLED'] == 'True':
             if len(self.docs) >= int(self.config['BERTOPIC']['MIN_DOCS']):
-                bertopic_results, error = topmod_bertopic.assess(self.config, self.docs, all_stop_words)
+                bertopic_results, error = bertopic_topic_modeling.assess(self.config, self.docs, all_stop_words)
 
                 #bertopic_results, error = self.run_bertopic(all_stop_words)
                 if error:

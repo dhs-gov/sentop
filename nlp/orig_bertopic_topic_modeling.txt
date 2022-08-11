@@ -4,7 +4,7 @@ from flair.embeddings import TransformerDocumentEmbeddings
 import numpy as np
 from nltk.tokenize import word_tokenize
 #from . import config_topic_mod as config     
-from . import topic_util
+from ..sentop.topic_modeling import topic_util
 import logging
 import time
 from sentop.util import log_util

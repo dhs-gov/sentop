@@ -1,67 +1,81 @@
-import os
-# Get CA Certificates bundle from org
-#os.environ['REQUESTS_CA_BUNDLE'] = 'path/to/certificates_ca_bundle.crt'
-#os.environ["REQUESTS_CA_BUNDLE"]=""
-
 import pandas as pd
-from pathlib import Path
+import spacy
+import nlp.sentiment_analysis as sentiment_analysis
+import nlp.lda_topic_modeling as lda
+#import nlp.bertopic_topic_modeling as bertopic
+import nlp.keywords as kw
 
-# Read XLSX file into dataframe
-# Make sure file is not open. Otherwise, we'll  get a permission denied error.
-df = pd.read_excel(r"C:\\work\\ochco_survey_data\\DHS Pulse Survey COVID19_Q6_FINISHED_COMBINED_05.20.20.xlsx", \
-    sheet_name="Q6. Recommendations for Leaders")
-#print(df)
-# Get 4th column (narrative column)
-doc_list = df['Q6. Recommendations on how DHS could help support \nyou and other employees during these difficult times'].values.tolist()
-#print(df2)
-#doc_list = df2.values.tolist()
-#print(f"doc_list: {doc_list}")
 
-# ---------------- Test 1 - Using AutoTokenizer ------------------
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from scipy.special import softmax
-import numpy as np
+#=================================== CONFIG =================================
 
-m0="C:\\work\\git\\transformer_models\\sentiment_analysis\\twitter-roberta-base-sentiment"
-tokenizer = AutoTokenizer.from_pretrained(m0)
-model = AutoModelForSequenceClassification.from_pretrained(m0)
+# Data file
+file_name = "SMALL_DHS Pulse Survey COVID19_Q6_FINISHED_COMBINED_05.20.20.xlsx"
+dir_path = "C:\\Users\\Stephen.Quirolgico\\OneDrive - Department of Homeland Security\\work\\projects\\ai-ml\\ochco_survey_analytics\\"
+file_path = dir_path + file_name
+sheet_name = "Q6. Recommendations for Leaders"
+df_all_data = pd.read_excel(file_path, sheet_name=sheet_name)
 
-text = "Good night 😊"
-#text = preprocess(text)
-encoded_input = tokenizer(text, return_tensors='pt')
-output = model(**encoded_input)
-scores = output[0][0].detach().numpy()
-scores = softmax(scores)
-print(f"scores: {scores}")
-ranking = np.argsort(scores)
-ranking = ranking[::-1]
+# Get narrative column
+col_name = "Q6. Recommendations on how DHS could help support \nyou and other employees during these difficult times"
+doc_list = df_all_data[col_name].values
+
+#doc_list = df[col_name].values.tolist()
+print(f"doc length: {len(doc_list)}")
+
+NUM_TOPICS = 10
+NUM_WORDS = 10
+user_stop_words = ['DHS', 'survey']
+
+spacy_nlp = spacy.load("en_core_web_sm") 
+
+
+
+#============================ SENTIMENT ANALYSIS ============================
 """
-for i in range(scores.shape[0]):
-    l = labels[ranking[i]]
-    s = scores[ranking[i]]
-    print(f"{i+1}) {l} {np.round(float(s), 4)}")
+class3_list = sentiment_analysis.get_sentiments(doc_list, 'twitter-roberta-base-sentiment')
+class3b_list = sentiment_analysis.get_sentiments(doc_list, 'distilbert-base-uncased-finetuned-sst-2-english')
+class5_list = sentiment_analysis.get_sentiments(doc_list, 'bert-base-multilingual-uncased-sentiment')
+emotion1_list = sentiment_analysis.get_sentiments(doc_list, 'bert-base-uncased-emotion')
+emotion2_list = sentiment_analysis.get_sentiments(doc_list, 'bert-base-cased-goemotions-original')
+offensive1_list = sentiment_analysis.get_sentiments(doc_list, 'twitter-roberta-base-offensive')
+
+# Add lists to form table
+df = pd.DataFrame({'Class3' : class3_list, 
+                   'Class3b' : class3b_list,
+                   'Class5' : class5_list,
+                   'Emotion1' : emotion1_list,
+                   'Emotion2' : emotion2_list,
+                   'Offensive1' : offensive1_list
+                   }) 
+
+print(df)
 """
-    
-# ---------------- Test 2 - Using Pipelines ------------------
-from transformers import pipeline
-# , model="C:\\work\\git\\transformer_models\\sentiment_analysis\\twitter-roberta-base-sentiment"
-classifier = pipeline("sentiment-analysis", m0)
-tokenizer_kwargs = {'padding':True,'truncation':True,'max_length':512}
 
-for i, doc in enumerate(doc_list):
+#============================== TOPIC MODELING ==============================
 
-    results = classifier(doc, **tokenizer_kwargs)
-    for result in results:
-        label = ""
-        if result['label'] == "LABEL_0":
-            label = "negative"
-        elif "LABEL_1" == "LABEL_1":
-            label = "neutral"
-        elif "LABEL_2" == "LABEL_2":
-            label = "positive"
-        else:
-            label = "UNKNOWN"
-        print(f"{label} = {round(result['score'], 4)}")
+#----------------------------------- LDA ------------------------------------
+
+
+#df_results = lda.get_tomotopy_lda(doc_list, NUM_TOPICS, NUM_WORDS, user_stop_words)
+#print(df_results)
+
+#--------------------------------- BERTOPIC ---------------------------------
+
+# Need MS C++ Build Tools to build HDBSCAN package for BERTopic
+
+
+#=========================== SIGNIFICANT KEYWORDS ===========================
+
+df_results = kw.get_keywords(doc_list, user_stop_words, spacy_nlp)
+print(df_results)
+
+
+
+
+
+
+
+
 
 
 

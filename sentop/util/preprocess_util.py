@@ -1,7 +1,7 @@
 import nltk
 from nltk.tokenize import word_tokenize
 import logging
-from . import stopwords
+from ...nlp import stopwords
 
 def get_all_stopwords(user_stop_words):
     lowercase_sentop_stopwords = [str(x).lower() for x in stopwords.stopwords_list]

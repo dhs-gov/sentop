@@ -1,4 +1,5 @@
 # Misc
+*.whl
 *notes.txt
 sentop_pip
 test.py

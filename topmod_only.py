@@ -1,7 +1,7 @@
 from enum import auto
-from sentop.topic_modeling import lda_tomotopy
-from sentop.topic_modeling import topmod_bertopic
-from sentop.topic_modeling import stopwords
+from nlp import lda_topic_modeling
+from nlp import bertopic_topic_modeling
+from nlp import stopwords
 from sentop.util import preprocess_util
 from sentop.util import log_util
 import xlsx_util2
@@ -90,7 +90,7 @@ class SenTop:
 
         if self.config['LDA']['ENABLED'] == 'True':
             if len(self.docs) >= int(self.config['LDA']['MIN_DOCS']):
-                lda_results, error = lda_tomotopy.assess(self.config, self.docs, all_stop_words)
+                lda_results, error = lda_topic_modeling.assess(self.config, self.docs, all_stop_words)
 
                 #lda_results, error = self.run_lda(all_stop_words)
                 if error:
@@ -108,7 +108,7 @@ class SenTop:
 
         if self.config['BERTOPIC']['ENABLED'] == 'True':
             if len(self.docs) >= int(self.config['BERTOPIC']['MIN_DOCS']):
-                bertopic_results, error = topmod_bertopic.assess(self.config, self.docs, all_stop_words)
+                bertopic_results, error = bertopic_topic_modeling.assess(self.config, self.docs, all_stop_words)
 
                 #bertopic_results, error = self.run_bertopic(all_stop_words)
                 if error:
